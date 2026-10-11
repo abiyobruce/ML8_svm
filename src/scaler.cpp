@@ -1,70 +1,292 @@
-#ifndef ML8_SCALER_HPP
-#define ML8_SCALER_HPP
-
+#include "ML8_svm/scaler.hpp"
+#include <cmath>
+#include <cstddef>
+#include <stdexcept>
 #include <vector>
 
 namespace ml8_svm
 {
 
-class StandardScaler
+namespace
 {
-private:
-    std::vector<double> mean;
-    std::vector<double> standard_deviation;
-    bool fitted;
 
-public:
-    StandardScaler();
-
-    void fit(const std::vector<std::vector<double>>& X);
-
-    std::vector<std::vector<double>> transform(
-        const std::vector<std::vector<double>>& X) const;
-
-    std::vector<std::vector<double>> fit_transform(
-        const std::vector<std::vector<double>>& X);
-
-    std::vector<std::vector<double>> inverse_transform(
-        const std::vector<std::vector<double>>& X) const;
-
-    const std::vector<double>& get_mean() const;
-
-    const std::vector<double>& get_standard_deviation() const;
-
-    bool is_fitted() const;
-};
-
-
-class MinMaxScaler
+void check_dataset(const std::vector<std::vector<double>>& data)
 {
-private:
-    std::vector<double> min_values;
-    std::vector<double> max_values;
-    double new_min;
-    double new_max;
-    bool fitted;
+    if (data.empty() || data[0].empty())
+        throw std::invalid_argument("Dataset cannot be empty");
 
-public:
-    MinMaxScaler();
+    std::size_t expected_features = data[0].size();
 
-    MinMaxScaler(double new_min, double new_max);
+    for (std::size_t row_index = 0; row_index < data.size(); row_index++)
+    {
+        if (data[row_index].size() != expected_features)
+            throw std::invalid_argument("Rows must have equal features");
+    }
+}
 
-    void fit(const std::vector<std::vector<double>>& X);
+void check_feature_count(const std::vector<std::vector<double>>& data,
+                         std::size_t expected_features)
+{
+    for (std::size_t row_index = 0; row_index < data.size(); row_index++)
+    {
+        if (data[row_index].size() != expected_features)
+            throw std::invalid_argument("Incorrect number of features");
+    }
+}
 
-    std::vector<std::vector<double>> transform(
-        const std::vector<std::vector<double>>& X) const;
+}
 
-    std::vector<std::vector<double>> fit_transform(
-        const std::vector<std::vector<double>>& X);
+StandardScaler::StandardScaler()
+{
+    fitted = false;
+}
 
-    std::vector<std::vector<double>> inverse_transform(
-        const std::vector<std::vector<double>>& X) const;
+void StandardScaler::fit(const std::vector<std::vector<double>>& X)
+{
+    check_dataset(X);
 
-    const std::vector<double>& get_min_values() const;
+    std::size_t number_of_rows = X.size();
+    std::size_t number_of_features = X[0].size();
+    double row_count = static_cast<double>(number_of_rows);
 
-    const std::vector<double>& get_max_values() const;
+    mean.assign(number_of_features, 0.0);
+    standard_deviation.assign(number_of_features, 0.0);
 
-    bool is_fitted() const;
-};
-} 
-#endif 
+    for (std::size_t row_index = 0; row_index < number_of_rows; row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+        {
+            mean[feature_index] += X[row_index][feature_index];
+        }
+    }
+
+    for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+    {
+        mean[feature_index] = mean[feature_index] / row_count;
+    }
+
+    for (std::size_t row_index = 0; row_index < number_of_rows; row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+        {
+            double difference = X[row_index][feature_index] - mean[feature_index];
+            standard_deviation[feature_index] += difference * difference;
+        }
+    }
+
+    for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+    {
+        double variance = standard_deviation[feature_index] / row_count;
+        standard_deviation[feature_index] = std::sqrt(variance);
+
+        if (standard_deviation[feature_index] == 0.0)
+            standard_deviation[feature_index] = 1.0;
+    }
+
+    fitted = true;
+}
+
+std::vector<std::vector<double>> StandardScaler::transform(
+    const std::vector<std::vector<double>>& X) const
+{
+    if (!fitted)
+        throw std::logic_error("Fit the scaler first");
+
+    check_feature_count(X, mean.size());
+
+    std::vector<std::vector<double>> result = X;
+
+    for (std::size_t row_index = 0; row_index < X.size(); row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < X[row_index].size(); feature_index++)
+        {
+            double centered_value = X[row_index][feature_index] - mean[feature_index];
+            result[row_index][feature_index] = centered_value / standard_deviation[feature_index];
+        }
+    }
+
+    return result;
+}
+
+std::vector<std::vector<double>> StandardScaler::fit_transform(
+    const std::vector<std::vector<double>>& X)
+{
+    fit(X);
+    return transform(X);
+}
+
+std::vector<std::vector<double>> StandardScaler::inverse_transform(
+    const std::vector<std::vector<double>>& X) const
+{
+    if (!fitted)
+        throw std::logic_error("Fit the scaler first");
+
+    check_feature_count(X, mean.size());
+
+    std::vector<std::vector<double>> result = X;
+
+    for (std::size_t row_index = 0; row_index < X.size(); row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < X[row_index].size(); feature_index++)
+        {
+            double stretched_value = X[row_index][feature_index] * standard_deviation[feature_index];
+            result[row_index][feature_index] = stretched_value + mean[feature_index];
+        }
+    }
+
+    return result;
+}
+
+const std::vector<double>& StandardScaler::get_mean() const
+{
+    return mean;
+}
+
+const std::vector<double>& StandardScaler::get_standard_deviation() const
+{
+    return standard_deviation;
+}
+
+bool StandardScaler::is_fitted() const
+{
+    return fitted;
+}
+
+MinMaxScaler::MinMaxScaler()
+{
+    new_min = 0.0;
+    new_max = 1.0;
+    fitted = false;
+}
+
+MinMaxScaler::MinMaxScaler(double new_min, double new_max)
+{
+    if (new_min >= new_max)
+        throw std::invalid_argument("new_min must be less than new_max");
+
+    this->new_min = new_min;
+    this->new_max = new_max;
+    fitted = false;
+}
+
+void MinMaxScaler::fit(const std::vector<std::vector<double>>& X)
+{
+    check_dataset(X);
+
+    std::size_t number_of_rows = X.size();
+    std::size_t number_of_features = X[0].size();
+
+    min_values.assign(number_of_features, 0.0);
+    max_values.assign(number_of_features, 0.0);
+
+    for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+    {
+        min_values[feature_index] = X[0][feature_index];
+        max_values[feature_index] = X[0][feature_index];
+    }
+
+    for (std::size_t row_index = 0; row_index < number_of_rows; row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < number_of_features; feature_index++)
+        {
+            double value = X[row_index][feature_index];
+
+            if (value < min_values[feature_index])
+                min_values[feature_index] = value;
+
+            if (value > max_values[feature_index])
+                max_values[feature_index] = value;
+        }
+    }
+
+    fitted = true;
+}
+
+std::vector<std::vector<double>> MinMaxScaler::transform(
+    const std::vector<std::vector<double>>& X) const
+{
+    if (!fitted)
+        throw std::logic_error("Fit the scaler first");
+
+    check_feature_count(X, min_values.size());
+
+    std::vector<std::vector<double>> result = X;
+    double new_range = new_max - new_min;
+
+    for (std::size_t row_index = 0; row_index < X.size(); row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < X[row_index].size(); feature_index++)
+        {
+            double old_range = max_values[feature_index] - min_values[feature_index];
+
+            if (old_range == 0.0)
+            {
+                result[row_index][feature_index] = new_min;
+            }
+            else
+            {
+                double fraction = (X[row_index][feature_index] - min_values[feature_index]) / old_range;
+                result[row_index][feature_index] = fraction * new_range + new_min;
+            }
+        }
+    }
+
+    return result;
+}
+
+std::vector<std::vector<double>> MinMaxScaler::fit_transform(
+    const std::vector<std::vector<double>>& X)
+{
+    fit(X);
+    return transform(X);
+}
+
+std::vector<std::vector<double>> MinMaxScaler::inverse_transform(
+    const std::vector<std::vector<double>>& X) const
+{
+    if (!fitted)
+        throw std::logic_error("Fit the scaler first");
+
+    check_feature_count(X, min_values.size());
+
+    std::vector<std::vector<double>> result = X;
+    double new_range = new_max - new_min;
+
+    for (std::size_t row_index = 0; row_index < X.size(); row_index++)
+    {
+        for (std::size_t feature_index = 0; feature_index < X[row_index].size(); feature_index++)
+        {
+            double old_range = max_values[feature_index] - min_values[feature_index];
+
+            if (old_range == 0.0)
+            {
+                result[row_index][feature_index] = min_values[feature_index];
+            }
+            else
+            {
+                double fraction = (X[row_index][feature_index] - new_min) / new_range;
+                result[row_index][feature_index] = fraction * old_range + min_values[feature_index];
+            }
+        }
+    }
+
+    return result;
+}
+
+const std::vector<double>& MinMaxScaler::get_min_values() const
+{
+    return min_values;
+}
+
+const std::vector<double>& MinMaxScaler::get_max_values() const
+{
+    return max_values;
+}
+
+bool MinMaxScaler::is_fitted() const
+{
+    return fitted;
+}
+
+}
+
