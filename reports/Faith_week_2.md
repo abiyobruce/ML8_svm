@@ -8,6 +8,7 @@
 * Updated CMake configuration to build and run test_scaler.cpp.
 * Prepared the .gitignore file.
 
+
 ## Challenges
 
 * Matching function declarations with implementations.
