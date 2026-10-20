@@ -27,6 +27,12 @@ void check_dataset(const std::vector<std::vector<double>>& data)
 void check_feature_count(const std::vector<std::vector<double>>& data,
                          std::size_t expected_features)
 {
+    if (data.empty())
+        throw std::invalid_argument("Dataset cannot be empty");
+
+    if (expected_features == 0)
+        throw std::invalid_argument("Dataset must contain features");
+
     for (std::size_t row_index = 0; row_index < data.size(); row_index++)
     {
         if (data[row_index].size() != expected_features)
@@ -159,13 +165,13 @@ MinMaxScaler::MinMaxScaler()
     fitted = false;
 }
 
-MinMaxScaler::MinMaxScaler(double new_min, double new_max)
+MinMaxScaler::MinMaxScaler(double range_min, double range_max)
 {
-    if (new_min >= new_max)
+    if (range_min >= range_max)
         throw std::invalid_argument("new_min must be less than new_max");
 
-    this->new_min = new_min;
-    this->new_max = new_max;
+    new_min = range_min;
+    new_max = range_max;
     fitted = false;
 }
 
@@ -289,4 +295,3 @@ bool MinMaxScaler::is_fitted() const
 }
 
 }
-
