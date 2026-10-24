@@ -1,343 +1,150 @@
 # ML8_svm
 
-A Support Vector Machine (SVM) for binary classification, written in C++17 from scratch with no external machine learning libraries.
-
-This project was developed by Group 16.
+A Support Vector Machine (SVM) for binary classification, written in C++17 from scratch without external machine learning libraries. Developed by Group 16.
 
 ## Features
 
-### Data Handling
-
-- Dataset loading and CSV handling.
-- Data preprocessing, including binary label encoding, missing-value handling, and train-test splitting.
-- Feature scaling using `StandardScaler` and `MinMaxScaler`.
-
-### Model
-
-- Hyperplane representation, distance, and margin computation.
-- Hinge loss and subgradient calculation.
-- Regularization.
-- Gradient-based optimization with training history and loss curves.
-- Support-vector identification.
-- Decision function and binary classification through the `LinearSVM` class.
-
-### Evaluation
-
-- Model evaluation metrics.
-- End-to-end pipeline testing.
-
-### Library Support
-
-- Core types, error handling, and linear algebra helpers.
-- CMake build system with CTest tests, installation rules, and exported targets.
+* Data handling: Dataset loading and CSV handling; preprocessing, including binary label encoding, missing-value handling, and train-test splitting; feature scaling with `StandardScaler` and `MinMaxScaler`.
+* Model: Hyperplane representation, distance and margin computation, hinge loss and subgradient, regularization, gradient-based optimization, training history, loss curves, support-vector identification, and binary classification using the `LinearSVM` class.
+* Evaluation: Model evaluation metrics and end-to-end pipeline testing.
+* Library support: Core types, error handling, linear algebra helpers, CMake build configuration, CTest tests, installation rules, and exported targets.
 
 ## Modules
 
-The public header files are located in `include/ML8_svm/`, while the implementation files are located in `src/`.
+Public headers are located in `include/ML8_svm/`, and implementations are located in `src/`.
 
-### Dataset
-
-The dataset module loads and handles datasets, including reading CSV files and storing feature and label information.
-
-Files:
-- `dataset.hpp`
-- `dataset.cpp`
-
-### Feature Scaling
-
-The scaling module provides `StandardScaler` and `MinMaxScaler` for scaling dataset features.
-
-Files:
-- `scaler.hpp`
-- `scaler.cpp`
-
-### Linear Algebra
-
-The linear algebra module provides basic mathematical operations used by the SVM implementation.
-
-File:
-- `linalg.cpp`
-
-### Hinge Loss
-
-The hinge loss module calculates the hinge loss used during SVM training and supports subgradient calculation.
-
-Files:
-- `hinge_loss.hpp`
-- `hinge_loss.cpp`
-
-### Regularization
-
-The regularization module provides regularization calculations used to control model complexity during training.
-
-Files:
-- `regularization.hpp`
-- `regularization.cpp`
-
-### Optimization
-
-The optimization module handles model parameter optimization and training history.
-
-Files:
-- `optimizer.hpp`
-- `optimizer.cpp`
-
-### Linear SVM
-
-The Linear SVM module implements the linear support vector machine classifier.
-
-Files:
-- `Linear_svm.hpp`
-- `Linear_svm.cpp`
-
-### Decision Function
-
-The decision module calculates decision scores and produces predictions for binary classification.
-
-Files:
-- `Decision.hpp`
-- `Decision.cpp`
-
-### Evaluation Metrics
-
-The metrics module provides functions for evaluating classification performance.
-
-Files:
-- `metrics.hpp`
-- `metrics.cpp`
-
-### Error Handling
-
-The error-handling module defines exceptions used to report invalid arguments, dimension mismatches, file errors, and other problems.
-
-File:
-- `errors.hpp`
-
-### Core Types
-
-The core types module contains shared type definitions used throughout the project.
-
-File:
-- `types.hpp`
+* Dataset (`dataset.hpp`, `dataset.cpp`): Loads datasets and CSV files and stores features and labels.
+* Feature scaling (`scaler.hpp`, `scaler.cpp`): Provides `StandardScaler` and `MinMaxScaler`.
+* Linear algebra (`linalg.cpp`): Provides basic mathematical operations used by the SVM.
+* Hinge loss (`hinge_loss.hpp`, `hinge_loss.cpp`): Implements hinge loss and its subgradient.
+* Regularization (`regularization.hpp`, `regularization.cpp`): Helps control model complexity during training.
+* Optimization (`optimizer.hpp`, `optimizer.cpp`): Handles parameter optimization and training history.
+* Linear SVM (`linear_svm.hpp` or `Linear_svm.hpp`, `Linear_svm.cpp`): Implements the linear SVM classifier. Confirm the exact header filename in your repository.
+* Decision function (`Decision.hpp`, `Decision.cpp`): Calculates decision scores and binary predictions.
+* Evaluation metrics (`metrics.hpp`, `metrics.cpp`): Provides classification performance metrics.
+* Error handling (`errors.hpp`): Defines error-handling facilities for invalid arguments, dimension mismatches, file errors, and other errors.
+* Core types (`types.hpp`): Contains shared type definitions.
 
 ## Requirements
 
-To build the project, you need:
+* A C++17-compatible compiler, such as GCC, Clang, or MSVC.
+* CMake 3.16 or newer.
+* Git.
 
-- A C++17-compatible compiler, such as GCC, Clang, or MSVC.
-- CMake version 3.16 or newer.
-- Git.
-
-The project does not require external machine learning libraries.
+No external machine learning libraries are required.
 
 ## Project Structure
 
-The project is organized as follows:
-
-```text
 ML8_svm/
-├── include/ML8_svm/    Public header files
-├── src/                Implementation files
-├── tests/              Test programs and test configuration
+├── include/
+│   └── ML8_svm/       Public header files
+├── src/               Implementation files
+├── tests/             Test programs and test configuration
 ├── data/
-│   ├── input/          Input data
-│   └── output/         Output data
-├── reports/            Weekly and final project reports
-├── CMakeLists.txt      Main CMake configuration
-├── LICENSE             Project license
-└── README.md           Project documentation
-```
+│   ├── input/         Input data
+│   └── output/        Output data
+├── reports/           Weekly and final project reports
+├── CMakeLists.txt     Main CMake configuration
+├── LICENSE            Project license
+└── README.md          Project documentation
 
-## Building the Project
 
-Open a terminal in the project root directory and configure the project:
+Confirm that the directories shown above exist in your repository before keeping them in this structure.
 
-```bash
+## Building
+
+Run these commands from the project root:
+
+bash
 cmake -S . -B build
-```
-
-Build the project in Release mode:
-
-```bash
 cmake --build build --config Release
-```
 
-These commands configure and compile the project using the available C++ compiler.
 
 ## Running the Tests
 
-The project uses CTest to register and run its tests.
+Run the following command to execute the registered tests:
 
-After building the project, run:
-
-```bash
+bash
 ctest --test-dir build -C Release --output-on-failure
-```
 
-The test programs cover the following areas:
 
-### Dataset Tests
+The project includes tests for the following modules, provided the corresponding test files exist and are registered in `tests/CMakeLists.txt`:
 
-Source file: `tests/test_dataset.cpp`
+* Dataset: Dataset loading and handling.
+* Hinge loss: Hinge loss calculations.
+* Metrics: Classification evaluation functions.
+* Optimizer: Optimization module.
+* Scaler:Feature scaling.
+* Decision function: Decision scores and predictions.
+* Linear SVM: Classifier training and prediction.
 
-These tests check dataset loading and handling.
+`tests/test_utils.hpp` provides helper functions shared by tests, if present.
 
-### Hinge Loss Tests
+Tests that use relative input-data paths should be run from the project root or configured with the appropriate working directory.
 
-Source file: `tests/test_hinge_loss.cpp`
-
-These tests check hinge loss calculations.
-
-### Evaluation Metrics Tests
-
-Source file: `tests/test_metrics.cpp`
-
-These tests check the classification evaluation functions.
-
-### Optimization Tests
-
-Source file: `tests/test_optimizer.cpp`
-
-These tests check the optimization module.
-
-### Feature Scaling Tests
-
-Source file: `tests/test_scaler.cpp`
-
-These tests check feature scaling functionality.
-
-### Decision Function Tests
-
-The decision function tests check decision scores and binary classification predictions.
-
-### Linear SVM Tests
-
-The Linear SVM tests check the classifier's training and prediction functionality.
-
-The shared header `tests/test_utils.hpp` provides helper functions used by the test programs.
-
-Tests that use relative paths to access input data should be run from the project root directory.
-
-### Running a Single Test
-
-To run only the feature scaling test, use:
-
-```bash
+To run only the scaler test, if it is registered under the name `test_scaler`, use:
+bash
 ctest --test-dir build -C Release -R test_scaler --output-on-failure
-```
 
-The test must be registered in `tests/CMakeLists.txt` for CTest to find it.
 
-## Installing the Library
+The name after `-R` must match the registered CTest test name.
 
-Build the project and install it into a local `install` directory:
+## Installing
 
-```bash
+Run the following commands from the project root:
+bash
 cmake -S . -B build
 cmake --build build --config Release
 cmake --install build --config Release --prefix install
-```
 
-The installation directory contains the compiled library and the public headers.
+
+The installation directory should contain the compiled library and public headers if installation completes successfully. Check the command output to confirm which files were installed.
 
 ## Using the Library in Another CMake Project
 
-The library can be included as a subdirectory in another CMake project.
+Place the ML8_svm repository inside your other project's directory. Then add the following to the other project's `CMakeLists.txt`:
 
-For example, if the ML8_svm repository is located inside the other project's directory, add the following to the other project's `CMakeLists.txt`:
-
-```cmake
+cmake
 add_subdirectory(ML8_svm)
-
 target_link_libraries(my_program PRIVATE ML8_svm::ML8_svm)
-```
+
 
 Replace `my_program` with the name of your executable target.
 
+This method uses the ML8_svm source directory directly.
+
 ## CMake Options
 
-The project provides an option for controlling whether tests are built.
+`ML8_SVM_BUILD_TESTS` is enabled by default. To build the library without tests, use:
 
-### Building Without Tests
-
-The `ML8_SVM_BUILD_TESTS` option is enabled by default.
-
-To configure the project without building tests, use:
-
-```bash
+bash
 cmake -S . -B build -DML8_SVM_BUILD_TESTS=OFF
-```
 
-When a single-configuration generator is used and no build type is specified, the project defaults to Release mode. With a multi-configuration generator, such as Visual Studio, select the desired configuration when building.
+
+For single-configuration generators, the project defaults to the Release build type if none is specified. For multi-configuration generators, such as Visual Studio, select the configuration when building.
 
 ## Troubleshooting
 
-### File Names and Capitalization
-
-File names may be case-sensitive on Linux and macOS. Make sure source file names match the names listed in `CMakeLists.txt`.
-
-### A New Source File Is Not Compiled
-
-Add the source file to the `add_library(ML8_svm ...)` section of the root `CMakeLists.txt`.
-
-### A New Test Is Not Run
-
-Make sure the test executable is defined and registered in `tests/CMakeLists.txt` using `add_test()`.
-
-### CTest Reports That No Tests Were Found
-
-Build the project first and check that testing is enabled and that the tests are registered correctly.
-
-For a multi-configuration build, use the appropriate configuration when running CTest.
-
-### Generated Folders Appear in Git
-
-Folders such as `build/` and `Testing/` are generated during building and testing. They should be listed in `.gitignore` so that generated files are not accidentally committed.
+* File-name capitalization: File names are case-sensitive on Linux and macOS. Ensure that the names in `CMakeLists.txt` match the actual files.
+* Source file not compiled: Add the source file to `add_library(ML8_svm ...)` in the root `CMakeLists.txt`.
+* Test not running: Ensure that the test executable is defined in `tests/CMakeLists.txt` and registered using `add_test()`.
+* CTest finds no tests: Check that tests are enabled, configure and build the project, and run CTest from the project root.
+* Generated folders appearing in Git:add generated directories such as `build/` and `Testing/` to `.gitignore`.
 
 ## Contributors
 
-### Bruce
+* Bruce: Dataset loading, CSV handling, input dataset documentation, and data preprocessing, including binary label encoding, missing-value handling, and train-test splitting.
+* Faith: Feature scaling, CMake build system, test configuration, integration, installation and export rules, and clean-environment build testing.
+* Martha: Hyperplane representation, distances, and margin computation.
+* Roland: Hinge loss and subgradient calculation.
+* Travor: Regularization, core types, error handling, and linear algebra.
+* Mercellinous: Gradient-based optimization, training history, and loss curves.
+* Majorine: Support-vector identification, umbrella header, documentation, report organization, and submission package.
+* Liz: Decision function, binary classification, and the `LinearSVM` class.
+* Jesse: Evaluation metrics, end-to-end pipeline testing, and evaluation results.
 
-Bruce contributed to dataset loading and CSV handling. His work includes reading datasets, handling input data, and documenting the input datasets and project data structure.
-
-Bruce also contributed to data preprocessing, including binary label encoding, missing-value handling, and train-test splitting.
-
-### Faith
-
-Faith contributed to feature scaling using `StandardScaler` and `MinMaxScaler`.
-
-Her responsibilities also include the CMake build system, test configuration, project integration, installation and export rules, and clean-environment build testing.
-
-### Martha
-
-Martha contributed to hyperplane representation, distance calculations, and margin computation for the support vector machine.
-
-### Roland
-
-Roland contributed to the hinge loss module and subgradient calculation used during SVM training.
-
-### Travor
-
-Travor contributed to regularization, shared core types, error handling, and linear algebra operations used by the other modules.
-
-### Mercellinous
-
-Mercellinous contributed to gradient-based optimization, training history, and loss curves used to examine model training.
-
-### Majorine
-
-Majorine contributed to support-vector identification, the umbrella header, project documentation, report organization, and preparation of the submission package.
-
-### Liz
-
-Liz contributed to the decision function, binary classification, and the `LinearSVM` class used for model training and prediction.
-
-### Jesse
-
-Jesse contributed to model evaluation metrics, end-to-end pipeline testing, and the collection and reporting of evaluation results.
-
-Weekly reports and the final report are available in the `reports/` directory.
+Weekly and final project reports are stored in the `reports/` directory.
 
 ## License
 
-This project is released under the license provided in the [LICENSE](LICENSE) file.
+This project is released under the terms of the license provided in the [LICENSE](LICENSE) file.
