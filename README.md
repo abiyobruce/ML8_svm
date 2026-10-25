@@ -44,5 +44,12 @@ A prediction is the sign of the decision function w . x + b, and the margin widt
 ## Limitations
 
 ## Contributions by Group Members
+Member M6 - KATENDE JOSEPH TRAVOR
+My name is Katende Joseph Travor, and I was in charge of setting up the mentioned modules;
+- types
+- errors
+- linalg
+- regularization. 
+I also did their tests, as well as the lambda sweep file
 
 ## How We Collaborated
