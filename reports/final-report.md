@@ -22,7 +22,8 @@ Support Vector Machine for binary classification from scratch (C++ library).
 
 <!-- Include the subgradient derivation and test results. -->
 
-## 7. Regularization (M6) Katende Joseph Travor
+## 7. Regularization (M6)
+
 The regularization module adds a penalty on the size of the weight vector to the hinge loss. Without it, the weights can grow large and fit the training data too closely. The full objective is J(w, b) = (lambda / 2)‖w‖² + the mean hinge loss, where lambda ≥ 0 sets the strength of the penalty.
 
 **Implementation.** `l2_penalty` returns (lambda / 2)‖w‖² and `l2_gradient` returns lambda · w. The optimizer adds this gradient to the hinge subgradient of w. The bias b is not penalised, because shifting the hyperplane does not make the model more complex. `objective` returns the hinge loss plus the penalty. Both L2 functions take O(d) time for d features, and `objective` takes O(n·d) because of the hinge loss over n samples. A negative or NaN lambda throws `InvalidArgument`, and `objective` also checks that X and y match and that the weights have one entry per feature.
@@ -63,10 +64,6 @@ This layer gives every module the same data types, the same vector operations an
 
 **Challenges.** `types.hpp` and `errors.hpp` were on the critical path, since every other module depends on them, so they were merged first and kept small. The shared `expect_throw` test helper reports a pass even when no exception is thrown, so these tests use their own check that verifies the exception type. The shape-check helpers are currently called only from the linalg and regularization code, because other modules validate their own input.
 
-
-### 7.1 Core Types and Error Handling (M6)
-
-<!-- Include lambda-sweep results. -->
 
 ## 8. Optimization (M7)
 

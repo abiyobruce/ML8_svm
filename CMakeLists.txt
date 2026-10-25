@@ -1,39 +1,56 @@
 
-cmake_minimum_required(VERSION 3.16)
-
-project(ML8_svm)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_library(ML8_svm
-    src/scaler.cpp
-    src/linalg.cpp
-    src/hyperplane.cpp
-    src/hinge_loss.cpp
-    src/regularization.cpp
-    src/optimizer.cpp
-    src/dataset.cpp
-    src/decision.cpp
-    src/linear_svm.cpp
-    src/metrics.cpp
-    src/preprocessing.cpp
-    src/support_vectors.cpp
+add_executable(test_scaler
+    test_scaler.cpp
 )
 
-add_library(ML8_svm::ML8_svm ALIAS ML8_svm)
-
-target_include_directories(ML8_svm
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_link_libraries(test_scaler
+    PRIVATE
+        ML8_svm::ML8_svm
 )
 
-enable_testing()
-
-add_subdirectory(tests)
-add_executable(example6_loss_curve
-    examples/example6_loss_curve.cpp
+add_test(
+    NAME scaler_test
+    COMMAND test_scaler
 )
 
-target_link_libraries(example6_loss_curve
-    PRIVATE ML8_svm::ML8_svm
+add_executable(test_optimizer
+    test_optimizer.cpp
+)
+
+target_link_libraries(test_optimizer
+    PRIVATE
+        ML8_svm::ML8_svm
+)
+
+add_test(
+    NAME optimizer_test
+    COMMAND test_optimizer
+)
+
+add_executable(test_linalg
+    test_linalg.cpp
+)
+
+target_link_libraries(test_linalg
+    PRIVATE
+        ML8_svm::ML8_svm
+)
+
+add_test(
+    NAME linalg_test
+    COMMAND test_linalg
+)
+
+add_executable(test_regularization
+    test_regularization.cpp
+)
+
+target_link_libraries(test_regularization
+    PRIVATE
+        ML8_svm::ML8_svm
+)
+
+add_test(
+    NAME regularization_test
+    COMMAND test_regularization
 )
