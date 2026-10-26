@@ -1,4 +1,4 @@
-# Week 1 Progress Report: M4 (Hyperplane representation and margin computation)
+# Week 1 Progress Report: (Hyperplane representation and margin computation)
 
 ## Completed
 - Declared `Hyperplane` (w, b) and its five methods in `include/ML8_svm/hyperplane.hpp`.
@@ -16,9 +16,8 @@
 - Implement all methods with validation; hand-computed tests; zero-weight edge case.
 
 ## AI Use
-- Tool: (fill in, e.g. Claude)
-- Purpose: Generated the initial header, stub and test skeleton for M4.
-- Reason: To save time on boilerplate; reviewed and understood before committing.
+- AI assistance was used to prepare the initial header, stub and test skeleton, as recorded in this note.
+- The specific AI tool was not recorded in the available Week 1 report.
 
 ---
 
