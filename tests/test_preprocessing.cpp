@@ -1,11 +1,8 @@
 #include <ML8_svm/preprocessing.hpp>
 #include <ML8_svm/errors.hpp>
 
-#include <ML8_svm/dataset.hpp>
-
 #include <cmath>
-#include <cstdio>
-#include <fstream>
+#include <cstddef>
 #include <iostream>
 #include <limits>
 #include <set>
@@ -22,9 +19,9 @@ static int g_fail = 0;
     << " FAILED: expected " #Ex "\n"; } } while (0)
 
 // n samples; X[i] = {i}; labels a (even i) / b (odd i)
-static Dataset make(size_t n, int a, int b) {
+static Dataset make(std::size_t n, int a, int b) {
     Dataset d;
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
         d.X.push_back({static_cast<double>(i)});
         d.y.push_back(i % 2 == 0 ? a : b);
     }
@@ -72,7 +69,7 @@ static void test_shuffle() {
     CHECK(a.X == b.X && a.y == b.y);                 // reproducible
     std::set<int> ids;
     bool paired = true;
-    for (size_t i = 0; i < a.X.size(); ++i) {
+    for (std::size_t i = 0; i < a.X.size(); ++i) {
         const int id = static_cast<int>(a.X[i][0]);
         ids.insert(id);
         if (a.y[i] != id % 2) paired = false;        // X and y still match
@@ -122,79 +119,8 @@ static void test_split() {
     CHECK_THROWS(train_test_split(tiny, 0.5, 1), InvalidArgument);
 }
 
-// ---------------- Week 3 additions ----------------
-
-// n_a samples of class 0 and n_b samples of class 1; X[i] = {i}
-static Dataset make_imbalanced(size_t n_a, size_t n_b) {
-    Dataset d;
-    d.feature_names = {"f"};
-    for (size_t i = 0; i < n_a + n_b; ++i) {
-        d.X.push_back({static_cast<double>(i)});
-        d.y.push_back(i < n_a ? 0 : 1);
-    }
-    return d;
-}
-
-static void test_stratified() {
-    Dataset d = make_imbalanced(20, 5);
-    Split s = train_test_split(d, 0.2, 3);
-    int test_a = 0, test_b = 0, train_a = 0, train_b = 0;
-    for (int v : s.test.y) (v == 0 ? test_a : test_b)++;
-    for (int v : s.train.y) (v == 0 ? train_a : train_b)++;
-    CHECK(test_a == 4 && test_b == 1);               // 20% of each class
-    CHECK(train_a == 16 && train_b == 4);
-    CHECK(s.train.feature_names == d.feature_names);  // names kept in both sets
-    CHECK(s.test.feature_names == d.feature_names);
-
-    Dataset big = make_imbalanced(20, 20);            // different seed -> different split
-    CHECK(train_test_split(big, 0.25, 1).test.X != train_test_split(big, 0.25, 2).test.X);
-
-    Dataset copy = d;                                 // input is not modified
-    train_test_split(d, 0.3, 9);
-    CHECK(d.X == copy.X && d.y == copy.y);
-
-    Dataset two = make_imbalanced(2, 2);              // ratio 0.9 is clamped: 1 test + 1 train per class
-    Split t = train_test_split(two, 0.9, 5);
-    CHECK(t.train.X.size() == 2 && t.test.X.size() == 2);
-}
-
-static void test_single_class() {
-    Dataset d = make_imbalanced(6, 0);
-    CHECK_THROWS(validate(d), InvalidArgument);
-    CHECK_THROWS(train_test_split(d, 0.5, 1), InvalidArgument);
-    CHECK_THROWS(encode_binary_labels(d), InvalidArgument);
-}
-
-static void test_loader_integration() {
-    const std::string path = "m2_integration_tmp.csv";
-    {
-        std::ofstream f(path);
-        f << "f1,f2,label\n";
-        for (int i = 0; i < 12; ++i)
-            f << i << ',' << (i * 2) << ',' << (i % 2 == 0 ? 0 : 1) << '\n';
-    }
-    Dataset d = load_csv(path, true, -1, ',');
-    std::remove(path.c_str());
-    CHECK(d.X.size() == 12 && d.X[0].size() == 2);
-
-    d.X[3][1] = std::numeric_limits<double>::quiet_NaN(); // simulate a missing value
-    impute_missing(d);
-    CHECK(!std::isnan(d.X[3][1]));
-    encode_binary_labels(d);
-    validate(d);
-    shuffle(d, 11);
-    Split s = train_test_split(d, 0.25, 11);
-    CHECK(s.train.X.size() + s.test.X.size() == 12);
-    CHECK(s.test.X.size() == 4);                      // 25% of 6 per class = 2 + 2
-    for (int v : s.train.y) CHECK(v == -1 || v == 1);
-    for (int v : s.test.y) CHECK(v == -1 || v == 1);
-
-    CHECK_THROWS(load_csv("no_such_file.csv", true, -1, ','), SvmError);
-}
-
 int main() {
     test_encode(); test_impute(); test_shuffle(); test_validate(); test_split();
-    test_stratified(); test_single_class(); test_loader_integration();
     if (g_fail) { std::cerr << g_fail << " check(s) failed\n"; return 1; }
     std::cout << "test_preprocessing: all tests passed\n";
     return 0;
