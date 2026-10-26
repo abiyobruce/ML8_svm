@@ -1,10 +1,10 @@
-
 #ifndef ML8_SVM_OPTIMIZER_HPP
 #define ML8_SVM_OPTIMIZER_HPP
 
 #include <cstddef>
 #include <vector>
 
+#include <ML8_svm/errors.hpp>
 #include <ML8_svm/types.hpp>
 #include <ML8_svm/hyperplane.hpp>
 
@@ -27,7 +27,7 @@ struct OptimizerConfig {
  */
 struct TrainingHistory {
     std::vector<double> loss; ///< Objective loss after each completed epoch.
-    size_t epochs_run{0};     ///< Number of epochs actually completed.
+    std::size_t epochs_run{0}; ///< Number of epochs actually completed.
     bool converged{false};    ///< True if the stopping tolerance was reached.
 };
 

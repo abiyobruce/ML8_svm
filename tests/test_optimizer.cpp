@@ -1,4 +1,3 @@
-
 #include <ML8_svm/optimizer.hpp>
 #include <ML8_svm/regularization.hpp>
 
