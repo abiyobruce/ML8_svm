@@ -1,4 +1,3 @@
-
 //  decision.cpp  
 //  Implementation of the functions declared in decision.hpp.
 
@@ -10,7 +9,7 @@
 
 namespace ml8_svm {
 
-// ---- score of one sample ----------------------------------------------------
+//  score of one sample 
 double decision_function(const Hyperplane& hyperplane, const Vector& x) {
     // Step 1: check the sample has the right number of features.
     // (We check here, instead of only inside score(), so the error message
@@ -28,7 +27,7 @@ double decision_function(const Hyperplane& hyperplane, const Vector& x) {
     return hyperplane.score(x);
 }
 
-// ---- scores of many samples -------------------------------------------------
+//  scores of many samples 
 Vector decision_function(const Hyperplane& hyperplane, const Matrix& X) {
     Vector scores;
     scores.reserve(X.size());          // we already know how many scores we need
@@ -41,7 +40,7 @@ Vector decision_function(const Hyperplane& hyperplane, const Matrix& X) {
     return scores;
 }
 
-// ---- score -> label ---------------------------------------------------------
+//  score -> label 
 int to_label(double score) {
     // NaN means "not a number" (for example 0/0). Every comparison with NaN
     // is false, so without this check NaN would quietly become -1.

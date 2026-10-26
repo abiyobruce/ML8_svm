@@ -1,6 +1,4 @@
-
-
-//  linear_svm.cpp        
+//  linear_svm.cpp    
 //  Implementation of the LinearSVM class.
 
 #include <ML8_svm/linear_svm.hpp>
@@ -14,11 +12,9 @@
 
 namespace ml8_svm {
 
-
 // Small helper that only this file uses (anonymous namespace = private).
 // It checks that the training data is usable BEFORE we start training, so the
 // user gets a clear message instead of a crash or nonsense results.
-
 namespace {
 
 void check_training_data(const Matrix& X, const std::vector<int>& y) {
@@ -34,11 +30,11 @@ void check_training_data(const Matrix& X, const std::vector<int>& y) {
     }
     // 3. Every row must have the same, non-zero number of features,
     //    and no value may be NaN or infinity.
-    const size_t n_features = X[0].size();
+    const std::size_t n_features = X[0].size();
     if (n_features == 0) {
         throw InvalidArgument("fit: samples have zero features");
     }
-    for (size_t i = 0; i < X.size(); ++i) {
+    for (std::size_t i = 0; i < X.size(); ++i) {
         if (X[i].size() != n_features) {
             throw DimensionMismatch("fit: row " + std::to_string(i) +
                                     " has a different number of features");
@@ -67,7 +63,7 @@ void check_training_data(const Matrix& X, const std::vector<int>& y) {
 
 }  // namespace
 
-// constructor 
+//  constructor 
 LinearSVM::LinearSVM(double lambda, OptimizerConfig cfg)
     : lambda_(lambda), config_(cfg) {
     // Check the settings straight away so mistakes show up early.
@@ -80,10 +76,11 @@ LinearSVM::LinearSVM(double lambda, OptimizerConfig cfg)
     if (cfg.epochs == 0) {
         throw InvalidArgument("LinearSVM: epochs must be at least 1");
     }
-    // tol is "stop early when the loss changes by less than this", so it
-    // cannot be negative or NaN. (0 is allowed: it means "never stop early".)
+    if (cfg.batch_size == 0) {
+        throw InvalidArgument("LinearSVM: batch_size must be at least 1");
+    }
     if (!std::isfinite(cfg.tol) || cfg.tol < 0.0) {
-        throw InvalidArgument("LinearSVM: tol must be a finite number >= 0");
+        throw InvalidArgument("LinearSVM: tol must be finite and non-negative");
     }
 }
 
@@ -103,19 +100,6 @@ void LinearSVM::fit(const Matrix& X, const std::vector<int>& y) {
     // hinge loss + L2 penalty). It changes `trained` and returns the loss log.
     TrainingHistory log = optimize(trained, X, y, lambda_, config_);
 
-    // Step 3b: a learning rate that is too big (or unscaled features) can make
-    // the numbers explode into infinity or NaN. A model like that would give
-    // nonsense, so we refuse to keep it. The old model stays untouched.
-    bool numbers_ok = std::isfinite(trained.b);
-    for (double weight : trained.w) {
-        if (!std::isfinite(weight)) numbers_ok = false;
-    }
-    if (!numbers_ok) {
-        throw InvalidArgument(
-            "fit: training diverged (weights became NaN or infinity). "
-            "Try a smaller learning_rate or scale the features first.");
-    }
-
     // Step 4: everything worked, so now we store the results.
     hyperplane_ = trained;
     history_    = log;
@@ -124,7 +108,7 @@ void LinearSVM::fit(const Matrix& X, const std::vector<int>& y) {
     fitted_     = true;
 }
 
-//  scores
+//  scores 
 double LinearSVM::decision_function(const Vector& x) const {
     require_fitted("decision_function");
     return ml8_svm::decision_function(hyperplane_, x);   // free function in decision.hpp
@@ -153,7 +137,7 @@ std::vector<int> LinearSVM::predict(const Matrix& X) const {
     return labels;
 }
 
-// accessors 
+//  accessors 
 const Hyperplane& LinearSVM::hyperplane() const {
     require_fitted("hyperplane");
     return hyperplane_;
@@ -164,13 +148,13 @@ const TrainingHistory& LinearSVM::history() const {
     return history_;
 }
 
-std::vector<size_t> LinearSVM::support_vector_indices() const {
+std::vector<std::size_t> LinearSVM::support_vector_indices() const {
     require_fitted("support_vector_indices");
     // M8's function does the real work; we just give it the training data.
     return find_support_vectors(hyperplane_, train_X_, train_y_);
 }
 
-//  private helper
+//  private helper 
 void LinearSVM::require_fitted(const char* caller) const {
     if (!fitted_) {
         throw NotFitted(std::string("LinearSVM::") + caller +

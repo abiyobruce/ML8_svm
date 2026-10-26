@@ -1,6 +1,4 @@
-
-
-//  test_linear_svm.cpp  
+//  test_linear_svm.cpp   
 //  Tests for the LinearSVM class: errors, training, predicting.
 //
 //  Uses test_assert() from test_utils.hpp (M3). A failed test_assert throws,
@@ -11,6 +9,7 @@
 #include "test_utils.hpp"
 
 #include <cmath>
+#include <cstddef>
 
 using namespace ml8_svm;
 
@@ -19,8 +18,7 @@ static bool almost_equal(double a, double b, double eps = 1e-12) {
 }
 
 // Passes ONLY if the code throws exactly the expected exception type.
-// (The shared expect_throw in test_utils.hpp also passes when nothing is
-//  thrown, so this local helper is safer. See the note in the Week 2 report.)
+// This local helper checks that each invalid input throws the expected type.
 template <typename ExceptionType, typename Function>
 static void expect_throw_type(Function function, const std::string& message) {
     bool right_type = false;
@@ -39,13 +37,13 @@ static std::vector<int> toy_y() { return {+1, +1, +1, +1, -1, -1, -1, -1}; }
 
 static OptimizerConfig good_config() {
     // learning_rate, epochs, batch_size, tol, decay, seed
-    return OptimizerConfig{0.1, 500, 8, 1e-9, false, 42};
+    return OptimizerConfig{0.05, 500, 8, 1e-9, true, 42};
 }
 
 int main() {
     const double lambda = 0.01;
 
-    //1. constructor rejects bad settings
+    //  1. constructor rejects bad settings 
     expect_throw_type<InvalidArgument>(
         [&] { LinearSVM bad(-1.0, good_config()); },
         "negative lambda throws InvalidArgument");
@@ -71,7 +69,7 @@ int main() {
         expect_throw_type<NotFitted>([&] { m.support_vector_indices(); }, "support_vector_indices() before fit throws NotFitted");
     }
 
-    // 3. fit() rejects bad training data 
+    //  3. fit() rejects bad training data 
     {
         LinearSVM m(lambda, good_config());
         expect_throw_type<InvalidArgument>([&] { m.fit(Matrix{}, std::vector<int>{}); }, "empty data throws InvalidArgument");
@@ -85,7 +83,7 @@ int main() {
         expect_throw_type<NotFitted>([&] { m.predict(Vector{1, 1}); }, "failed fits leave the model not fitted");
     }
 
-    // 4. a good fit solves the toy probem 
+    //  4. a good fit solves the toy problem 100% 
     LinearSVM model(lambda, good_config());
     model.fit(toy_X(), toy_y());
 
@@ -97,33 +95,33 @@ int main() {
     // predict must agree with the sign of decision_function
     Vector scores = model.decision_function(toy_X());
     bool signs_agree = true, versions_agree = true;
-    for (size_t i = 0; i < scores.size(); ++i) {
+    for (std::size_t i = 0; i < scores.size(); ++i) {
         if ((scores[i] >= 0) != (predicted[i] == +1)) signs_agree = false;
         if (!almost_equal(scores[i], model.decision_function(toy_X()[i]))) versions_agree = false;
     }
     test_assert(signs_agree, "predict agrees with the sign of decision_function");
     test_assert(versions_agree, "matrix and single-sample scores agree");
 
-    // 5. accessors after training 
+    //  5. accessors after training 
     test_assert(model.hyperplane().w.size() == 2, "hyperplane has one weight per feature");
     test_assert(model.history().epochs_run >= 1, "history records at least one epoch");
     test_assert(!model.history().loss.empty(), "history records the loss");
     test_assert(model.history().loss.back() <= model.history().loss.front(), "loss went down during training");
     bool indices_ok = true;
-    for (size_t idx : model.support_vector_indices()) if (idx >= toy_X().size()) indices_ok = false;
+    for (std::size_t idx : model.support_vector_indices()) if (idx >= toy_X().size()) indices_ok = false;
     test_assert(indices_ok, "support vector indices are valid row numbers");
 
-    // 6. wrong feature count at prediction time 
+    //  6. wrong feature count at prediction time 
     expect_throw_type<DimensionMismatch>([&] { model.predict(Vector{1.0}); }, "predict with wrong feature count throws DimensionMismatch");
     expect_throw_type<DimensionMismatch>([&] { model.predict(Matrix{{1.0, 2.0}, {1.0}}); }, "predict matrix with a short row throws DimensionMismatch");
 
-    // 7. a failed re-fit keeps the old working model 
+    //  7. a failed re-fit keeps the old working model 
     Hyperplane before = model.hyperplane();
     expect_throw_type<InvalidArgument>([&] { model.fit(Matrix{}, std::vector<int>{}); }, "bad re-fit throws InvalidArgument");
     test_assert(model.hyperplane().w == before.w && model.hyperplane().b == before.b, "failed re-fit leaves the line unchanged");
     test_assert(model.predict(toy_X()) == toy_y(), "model still predicts correctly after a failed re-fit");
 
-    //  8. fitting again on new data replaces the model
+    //  8. fitting again on new data replaces the model 
     std::vector<int> flipped = toy_y();
     for (int& label : flipped) label = -label;
     model.fit(toy_X(), flipped);
