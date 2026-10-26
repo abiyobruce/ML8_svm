@@ -1,61 +1,41 @@
-// Builds a hand-made 2-D hyperplane and prints, for a few labelled points,
-// the score, signed distance, functional margin and geometric margin.
-
-#include <ML8_svm/hyperplane.hpp>
-
+// Compare standard scaling with min-max scaling on a small matrix.
+#include <ML8_svm/scaler.hpp>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <vector>
-
-using namespace ml8_svm;
 
 int main() {
-    // Hyperplane x1 + x2 - 2 = 0  (w = (1,1), b = -2, ||w|| = sqrt(2)).
-    Hyperplane h;
-    h.w = {1.0, 1.0};
-    h.b = -2.0;
+    using namespace ml8_svm;
 
-    struct Sample { Vector x; int y; const char* note; };
-    const std::vector<Sample> samples = {
-        {{2.0, 2.0},  +1, "correct, positive side"},
-        {{3.0, 1.0},  +1, "correct, positive side"},
-        {{0.0, 0.0},  -1, "correct, negative side"},
-        {{-1.0, 1.0}, -1, "correct, negative side"},
-        {{1.0, 1.0},  +1, "on the boundary"},
-        {{2.0, 1.0},  -1, "misclassified"},
+    const Matrix training_data = {
+        {2.0, 1000.0},
+        {4.0, 3000.0},
+        {6.0, 2000.0},
     };
 
-    std::cout << std::fixed << std::setprecision(4);
-    std::cout << "Hyperplane: w = (" << h.w[0] << ", " << h.w[1]
-              << "), b = " << h.b << "\n";
-    std::cout << "Margin width (2/||w||): " << h.margin_width() << "\n\n";
+    // Both scaler objects can be used through the same base-class interface.
+    // The selected object's fit() and transform() methods are called.
+    StandardScaler standard;
+    Scaler& standard_interface = standard;
+    const Matrix standardized = standard_interface.fit_transform(training_data);
 
-    std::cout << std::setw(12) << "x" << std::setw(4) << "y"
-              << std::setw(10) << "score" << std::setw(10) << "distance"
-              << std::setw(12) << "functional" << std::setw(11) << "geometric"
-              << "  note\n";
+    MinMaxScaler min_max(0.0, 1.0);
+    Scaler& min_max_interface = min_max;
+    const Matrix min_max_scaled = min_max_interface.fit_transform(training_data);
 
-    for (const auto& s : samples) {
-        std::ostringstream pt;
-        pt << std::fixed << std::setprecision(1) << "(" << s.x[0] << ", " << s.x[1] << ")";
-        std::cout << std::setw(12) << pt.str()
-                  << std::setw(4) << s.y
-                  << std::setw(10) << h.score(s.x)
-                  << std::setw(10) << h.distance(s.x)
-                  << std::setw(12) << h.functional_margin(s.x, s.y)
-                  << std::setw(11) << h.geometric_margin(s.x, s.y)
-                  << "  " << s.note << "\n";
+    std::cout << std::fixed << std::setprecision(3);
+    std::cout << "Feature scaling example\n";
+    std::cout << "Rows are samples; columns are features.\n\n";
+    std::cout << "Original data       StandardScaler       MinMaxScaler\n";
+
+    for (std::size_t row = 0; row < training_data.size(); ++row) {
+        std::cout << "(" << training_data[row][0] << ", "
+                  << training_data[row][1] << ")       ("
+                  << standardized[row][0] << ", "
+                  << standardized[row][1] << ")          ("
+                  << min_max_scaled[row][0] << ", "
+                  << min_max_scaled[row][1] << ")\n";
     }
 
-    // Edge case: a zero weight vector has no defined distance or margin width.
-    Hyperplane degenerate;
-    degenerate.w = {0.0, 0.0};
-    degenerate.b = 0.5;
-    try {
-        degenerate.margin_width();
-    } catch (const InvalidArgument& e) {
-        std::cout << "\nZero-weight hyperplane: " << e.what() << "\n";
-    }
+    std::cout << "\nThe scaler is fitted on training data only.\n";
     return 0;
 }

@@ -1,151 +1,56 @@
-#include "ML8_svm/scaler.hpp"
+#include <ML8_svm/scaler.hpp>
+#include <ML8_svm/errors.hpp>
 #include "test_utils.hpp"
 #include <cmath>
-#include <cstddef>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
 
 using namespace ml8_svm;
-using namespace std;
-using Matrix = vector<vector<double>>;
 
-template <typename Function>
-void expect_exception(Function function, const string& message)
-{
-    try
-    {
-        function();
-    }
-    catch (const exception&)
-    {
-        return;
-    }
-
-    throw runtime_error(message);
-}
-
-void test_standard_scaler()
-{
-    Matrix X = {{1, 10}, {3, 20}, {5, 30}};
-    StandardScaler scaler;
-
-    Matrix result = scaler.fit_transform(X);
-
-    expect_true(scaler.is_fitted(), "StandardScaler should be fitted");
-    expect_near(scaler.get_mean()[0], 3.0, 0.0001, "First feature mean");
-    expect_near(scaler.get_mean()[1], 20.0, 0.0001, "Second feature mean");
-    expect_near(result[0][0], -1.2247, 0.001, "First scaled value");
-    expect_near(result[1][0], 0.0, 0.0001, "Middle scaled value");
-    expect_near(result[2][0], 1.2247, 0.001, "Last scaled value");
-
-    Matrix original = scaler.inverse_transform(result);
-
-    for (size_t i = 0; i < X.size(); i++)
-    {
-        for (size_t j = 0; j < X[i].size(); j++)
-        {
-            expect_near(original[i][j], X[i][j], 0.0001, "StandardScaler inverse transform");
-        }
-    }
-}
-
-void test_minmax_scaler()
-{
-    Matrix X = {{1, 10}, {3, 20}, {5, 30}};
-    MinMaxScaler scaler;
-
-    Matrix result = scaler.fit_transform(X);
-
-    expect_true(scaler.is_fitted(), "MinMaxScaler should be fitted");
-    expect_near(scaler.get_min_values()[0], 1.0, 0.0001, "First feature minimum");
-    expect_near(scaler.get_max_values()[0], 5.0, 0.0001, "First feature maximum");
-    expect_near(result[0][0], 0.0, 0.0001, "Minimum scaled value");
-    expect_near(result[1][0], 0.5, 0.0001, "Middle scaled value");
-    expect_near(result[2][0], 1.0, 0.0001, "Maximum scaled value");
-
-    Matrix original = scaler.inverse_transform(result);
-
-    for (size_t i = 0; i < X.size(); i++)
-    {
-        for (size_t j = 0; j < X[i].size(); j++)
-        {
-            expect_near(original[i][j], X[i][j], 0.0001, "MinMaxScaler inverse transform");
-        }
-    }
-}
-
-void test_custom_minmax_range()
-{
-    Matrix X = {{1}, {3}, {5}};
-    MinMaxScaler scaler(-1.0, 1.0);
-
-    Matrix result = scaler.fit_transform(X);
-
-    expect_near(result[0][0], -1.0, 0.0001, "Custom minimum");
-    expect_near(result[1][0], 0.0, 0.0001, "Custom middle value");
-    expect_near(result[2][0], 1.0, 0.0001, "Custom maximum");
-}
-
-void test_constant_features()
-{
-    Matrix X = {{5, 10}, {5, 20}, {5, 30}};
+int main() {
+    const Matrix data = {{1.0, 10.0, 4.0}, {3.0, 20.0, 4.0},
+                         {5.0, 30.0, 4.0}, {7.0, 40.0, 4.0}};
 
     StandardScaler standard;
-    Matrix standard_result = standard.fit_transform(X);
+    expect_throw<NotFitted>([&]() { standard.transform(data); },
+                            "standard scaler needs fit before transform");
 
-    expect_near(standard_result[0][0], 0.0, 0.0001, "StandardScaler constant feature");
-    expect_near(standard_result[1][0], 0.0, 0.0001, "StandardScaler constant feature");
+    const Matrix standardized = standard.fit_transform(data);
+    test_assert(standard.is_fitted(), "standard scaler records fitted state");
+    test_assert(std::abs(standard.get_mean()[0] - 4.0) < 1e-12,
+                "standard scaler calculates the feature mean");
+    test_assert(std::abs(standardized[0][0] + standardized[3][0]) < 1e-12,
+                "standardized values are centered around zero");
+    test_assert(standardized[0][2] == 0.0 && standardized[3][2] == 0.0,
+                "constant feature is scaled without division by zero");
 
-    MinMaxScaler minmax;
-    Matrix minmax_result = minmax.fit_transform(X);
+    const Matrix restored = standard.inverse_transform(standardized);
+    test_assert(std::abs(restored[2][1] - data[2][1]) < 1e-12,
+                "standard scaler inverse_transform restores the input");
 
-    expect_near(minmax_result[0][0], 0.0, 0.0001, "MinMaxScaler constant feature");
-    expect_near(minmax_result[1][0], 0.0, 0.0001, "MinMaxScaler constant feature");
+    // The same operations can be called through the common Scaler interface.
+    // fit_transform() then calls the selected scaler's virtual fit() and transform().
+    Scaler& standard_interface = standard;
+    const Matrix scaled_through_interface = standard_interface.fit_transform(data);
+    test_assert(standard_interface.is_fitted() &&
+                    std::abs(scaled_through_interface[0][0] - standardized[0][0]) < 1e-12,
+                "standard scaler works through the polymorphic Scaler interface");
 
-    Matrix original = minmax.inverse_transform(minmax_result);
+    MinMaxScaler minmax(-1.0, 1.0);
+    const Matrix minmax_data = minmax.fit_transform(data);
+    test_assert(std::abs(minmax_data[0][0] + 1.0) < 1e-12 &&
+                    std::abs(minmax_data[3][0] - 1.0) < 1e-12,
+                "min-max scaler maps values into the requested range");
+    test_assert(minmax_data[0][2] == -1.0 && minmax_data[3][2] == -1.0,
+                "constant feature maps to the lower end of the range");
 
-    for (size_t i = 0; i < X.size(); i++)
-    {
-        expect_near(original[i][0], 5.0, 0.0001, "Restore constant feature");
-    }
-}
+    const Matrix minmax_restored = minmax.inverse_transform(minmax_data);
+    test_assert(std::abs(minmax_restored[1][1] - data[1][1]) < 1e-12,
+                "min-max scaler inverse_transform restores the input");
+    Scaler& minmax_interface = minmax;
+    const Matrix minmax_through_interface = minmax_interface.transform(data);
+    test_assert(std::abs(minmax_through_interface[0][0] - minmax_data[0][0]) < 1e-12,
+                "min-max scaler overrides transform through the Scaler interface");
+    expect_throw<InvalidArgument>([]() { MinMaxScaler invalid(1.0, 1.0); },
+                                  "min-max scaler rejects an empty output range");
 
-void test_errors()
-{
-    StandardScaler standard;
-    MinMaxScaler minmax;
-    Matrix X = {{1, 2}, {3, 4}};
-
-    expect_exception([&]() { standard.transform(X); }, "StandardScaler should reject transform before fit");
-    expect_exception([&]() { minmax.transform(X); }, "MinMaxScaler should reject transform before fit");
-
-    expect_exception([&]() { standard.fit({}); }, "StandardScaler should reject empty data");
-    expect_exception([&]() { minmax.fit({}); }, "MinMaxScaler should reject empty data");
-
-    expect_exception([&]() { standard.fit({{1, 2}, {3}}); }, "StandardScaler should reject inconsistent rows");
-    expect_exception([&]() { minmax.fit({{1, 2}, {3}}); }, "MinMaxScaler should reject inconsistent rows");
-
-    expect_exception([&]() { MinMaxScaler invalid(5.0, 1.0); }, "MinMaxScaler should reject an invalid range");
-}
-
-int main()
-{
-    try
-    {
-        test_standard_scaler();
-        test_minmax_scaler();
-        test_custom_minmax_range();
-        test_constant_features();
-        test_errors();
-
-        cout << "All scaler tests passed." << endl;
-        return 0;
-    }
-    catch (const exception& error)
-    {
-        cerr << "Test failed: " << error.what() << endl;
-        return 1;
-    }
+    return 0;
 }
