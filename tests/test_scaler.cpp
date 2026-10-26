@@ -1,6 +1,4 @@
-
 #include "ML8_svm/scaler.hpp"
-<<<<<<< HEAD
 #include "test_utils.hpp"
 #include <cmath>
 #include <cstddef>
@@ -12,16 +10,6 @@
 using namespace ml8_svm;
 using namespace std;
 using Matrix = vector<vector<double>>;
-=======
-
-#include <cassert>
-#include <cmath>
-#include <iostream>
-#include <vector>
-
-void test_standard_scaler() {
-   ml8_svm::StandardScaler scaler;
->>>>>>> origin/main
 
 template <typename Function>
 void expect_exception(Function function, const string& message)
@@ -35,7 +23,6 @@ void expect_exception(Function function, const string& message)
         return;
     }
 
-<<<<<<< HEAD
     throw runtime_error(message);
 }
 
@@ -162,20 +149,3 @@ int main()
         return 1;
     }
 }
-=======
-    const auto scaled_data = scaler.fit_transform(data);
-
-    assert(scaler.is_fitted());
-
-    // The first and last standardized values should sum to zero
-    // for this evenly spaced dataset.
-    assert(std::abs(scaled_data[0][0] + scaled_data[3][0]) < 1e-6);
-
-    std::cout << "StandardScaler unit test passed." << std::endl;
-}
-
-int main() {
-    test_standard_scaler();
-    return 0;
-}
->>>>>>> origin/main
