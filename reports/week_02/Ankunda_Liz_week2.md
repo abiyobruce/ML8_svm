@@ -1,11 +1,11 @@
-# Week 2 Report: Liz (M9), Decision Function and Binary Classification
+# Week 2 Report: Decision Function and Binary Classification
 
 ## Completed
 - Implemented `decision.cpp`: `decision_function` for one sample and for a matrix (both use `Hyperplane::score`, so the formula is not duplicated), and `to_label` (score of 0 or more gives +1, otherwise -1).
 - Added input checks: a wrong number of features throws `DimensionMismatch`, and a NaN score throws `InvalidArgument`.
 - Implemented `linear_svm.cpp`: constructor checks (negative lambda, learning rate of 0 or less, zero epochs), `fit` wired to `optimize`, `decision_function`, `predict`, and the accessors `hyperplane()`, `history()` and `support_vector_indices()`.
 - `fit` validates the data first and works on a local copy, so a failed `fit` leaves the old model unchanged.
-- Wrote unit tests in `test_decision.cpp` and `test_linear_svm.cpp`. [Edit: say which tests pass, for example "decision tests pass; the training test depends on M7's optimizer".]
+- Wrote unit tests in `test_decision.cpp` and `test_linear_svm.cpp`. This report did not record their pass status.
 
 ## In Progress
 - Running the training test against M7's real optimizer once it is merged.

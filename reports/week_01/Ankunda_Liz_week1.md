@@ -1,4 +1,4 @@
-# Week 1 Report: Liz (M9), Decision Function and Binary Classification
+# Week 1 Report: Decision Function and Binary Classification
 
 ## Completed
 - Declared `decision function` (one sample and many samples) and `to label` in `decision.hpp`.
@@ -22,4 +22,3 @@
 
 ## AI Use
 - Tool: Claude (Anthropic). Purpose: help draft the header declarations, the stub files and these notes. Reason: to speed up the first version. I reviewed the declarations against the interface contract and I can explain them.
-- Edit this line so it is accurate for what you actually did, because undeclared use is penalised.

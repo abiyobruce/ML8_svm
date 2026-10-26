@@ -1,4 +1,4 @@
- Decision function and the LinearSVM class 
+## Decision function and the LinearSVM class 
 
 **What the module does.** After training, a linear SVM is a line (or plane) described by a weight vector w and a bias b. The decision function gives every point a score, w · x + b. 
 A positive score puts the point on the +1 side, a negative score on the -1 side, and a larger absolute value means the model is more sure. 
@@ -9,4 +9,5 @@ A prediction is the sign of that score, and a score of exactly zero goes to clas
 **Complexity.** Scoring one sample costs O(d) for d features, and n samples cost O(n · d). Validation in `fit` costs O(n · d), and training costs whatever the optimizer costs, about epochs × n × d for full-batch training.
 
 **Tests and results.** `test_decision.cpp` uses scores worked out by hand: with w = (2, -1) and b = 0.5, the point (1, 1) must score 1.5. It also covers wrong sizes, empty input, the boundary at zero and NaN. `test_linear_svm.cpp` covers bad settings, bad data, `NotFitted` errors, a toy dataset classified with 100% accuracy, model copies, re-fitting with a different number of features, and a diverging run. To check the tests can really fail, I broke the code in several ways on purpose, and the tests caught each one.
+
 **Challenges.** My module depends on M4's `Hyperplane` and M7's optimizer, so I first tested against temporary stand-ins. The shared `expect_throw` helper passed even when nothing was thrown, so I wrote a stricter check that also verifies the exception type. [Edit: add anything else you faced.]
