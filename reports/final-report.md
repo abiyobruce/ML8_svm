@@ -1,114 +1,121 @@
 # ML8_svm Final Report
 
-Support Vector Machine for binary classification from scratch (C++ library).
+**Project:** Linear Support Vector Machine for binary classification in C++17 (ML8_svm)
+**Project group:** Group 16
 
-## 1. Introduction and Problem (M1) and Project Structure (M8)
+## 1. Introduction and project structure
 
-<!-- M1: problem and motivation. M8: project structure. -->
+This project implements a reusable linear Support Vector Machine (SVM) library for binary classification. The goal was to make the mathematics and training process visible in ordinary C++ code, while still providing a practical pipeline for reading data, preprocessing features, training a model, making predictions, and measuring results. The implementation has no external machine-learning library dependency.
 
-## 2. Dataset Loading and Data Description (M1)
+The decision score is `w . x + b`. Labels are represented as -1 and +1. Training minimizes the mean hinge loss plus an L2 penalty on the weights. The library is organized into public headers in `include/ML8_svm/`, implementations in `src/`, 13 focused test programs in `tests/`, eight runnable examples in `examples/`, two CSV datasets in `data/input/`, generated output in `data/output/`, and project reports and figures in `reports/`.
 
-## 3. Preprocessing (M2)
+The public umbrella header is `<ML8_svm/ML8_svm.hpp>`. The top-level CMake project builds the library, test programs, examples, and installable CMake package. The README describes the public API, build commands, data, examples, and limitations.
 
-## 4. Feature Scaling (M3)
+## 2. Dataset loading and data description (Bruce)
 
-### 4.1 Build and Test Setup (M3)
+`load_csv` reads numeric CSV data with an optional header, configurable delimiter, and selectable label column. It handles whitespace, blank lines, Windows line endings, a UTF-8 byte-order mark, quoted numeric fields, common numeric formats, and recognized missing-value markers in features. It reports malformed rows and labels through the library's exception types. Quoted fields containing the delimiter and text-valued columns are outside the supported format.
 
-## 5. Hyperplane Geometry and Margin (M4)
+Two datasets are included:
 
-<!-- Include a worked 2-D example and figure. -->
+| Dataset | Rows | Features | Labels | Use |
+|---|---:|---:|---|---|
+| `linear_separable.csv` | 200 | 2 | -1 and +1, balanced | Quick training and pipeline checks on separated Gaussian clusters |
+| `iris_versicolor_virginica.csv` | 100 | 4 | versicolor and virginica | Small real-data binary classification example |
 
-## 6. Hinge Loss (M5)
+The input-data README records each dataset's provenance, columns, label format, and CSV limitations. The synthetic data is intentionally easy to separate; perfect accuracy on it is not evidence of general performance.
 
-<!-- Include the subgradient derivation and test results. -->
+## 3. Preprocessing (Jeremiah)
 
-## 7. Regularization (M6)
+The preprocessing module supports binary-label encoding, feature-wise mean imputation, seeded shuffling, data validation, and stratified train/test splitting. Validation checks that samples have consistent feature counts, that labels are valid, and that both classes are available where training requires them. The split keeps class proportions as similar as possible in the training and test portions and can be repeated with a fixed seed.
 
-The regularization module adds a penalty on the size of the weight vector to the hinge loss. Without it, the weights can grow large and fit the training data too closely. The full objective is J(w, b) = (lambda / 2)‖w‖² + the mean hinge loss, where lambda ≥ 0 sets the strength of the penalty.
+The end-to-end example fits the scaler only on training features, then applies those training statistics to the test features. The k-fold example repeats the same rule inside each fold, preventing the held-out fold from influencing its scaler.
 
-**Implementation.** `l2_penalty` returns (lambda / 2)‖w‖² and `l2_gradient` returns lambda · w. The optimizer adds this gradient to the hinge subgradient of w. The bias b is not penalised, because shifting the hyperplane does not make the model more complex. `objective` returns the hinge loss plus the penalty. Both L2 functions take O(d) time for d features, and `objective` takes O(n·d) because of the hinge loss over n samples. A negative or NaN lambda throws `InvalidArgument`, and `objective` also checks that X and y match and that the weights have one entry per feature.
+## 4. Feature scaling and build integration (Faith)
 
-**Tests.** `test_regularization.cpp` runs 29 checks, all passing. They use hand-computed values (w = (3, 4) with lambda = 0.1 gives a penalty of 1.25), compare `l2_gradient` with a numerical derivative, check that changing b leaves the penalty unchanged, and cover lambda = 0, w = 0, empty input and invalid input.
+`StandardScaler` stores per-feature means and population standard deviations. `MinMaxScaler` stores per-feature minima and maxima and maps values into a selected range. Both support inverse transformation and report whether they have been fitted. Constant features are handled without division by zero.
 
-**Lambda sweep.** `examples/lambda_sweep.cpp` trains one model for each of 11 lambda values from 1e-4 to 10 on the two-class Iris subset (100 samples, 80 for training and 20 for testing). Features are standardised using the training set only. Every run uses the same settings: full-batch gradient descent, learning rate 0.1 with decay, 500 epochs, tolerance 1e-6 and seed 42.
+The classes implement a shared abstract `Scaler` interface. Code can call `fit_transform` or transform data through a base-class reference, while virtual functions select the derived scaler's calculations at runtime. This demonstrates inheritance and polymorphism in a useful API rather than in an unrelated example.
 
-| lambda | ‖w‖ | margin width | objective | train acc. | test acc. | support vectors |
-|---:|---:|---:|---:|---:|---:|---:|
-| 0.0001 | 0.608 | 3.29 | 0.382 | 0.925 | 0.95 | 51 |
-| 0.000316 | 0.608 | 3.29 | 0.382 | 0.925 | 0.95 | 51 |
-| 0.001 | 0.608 | 3.29 | 0.382 | 0.925 | 0.95 | 51 |
-| 0.00316 | 0.607 | 3.29 | 0.382 | 0.925 | 0.95 | 51 |
-| 0.01 | 0.606 | 3.30 | 0.384 | 0.925 | 0.95 | 51 |
-| 0.0316 | 0.603 | 3.32 | 0.389 | 0.925 | 0.95 | 51 |
-| 0.1 | 0.593 | 3.37 | 0.406 | 0.925 | 0.95 | 53 |
-| 0.316 | 0.562 | 3.56 | 0.454 | 0.925 | 0.95 | 56 |
-| 1 | 0.483 | 4.14 | 0.568 | 0.925 | 0.90 | 63 |
-| 3.16 | 0.321 | 6.23 | 0.758 | 0.925 | 0.85 | 75 |
-| 10 | 0.128 | 15.64 | 0.918 | 0.900 | 0.85 | 80 |
+The CMake configuration declares C++17, builds all 12 implementation files into the library, registers the 13 tests with CTest, and builds seven teaching examples plus the lambda sweep. Installation exports the library and a `find_package(ML8_svm CONFIG)` package. The configuration is present, but a CMake-generated build could not be run on the verification host because it had no installed make/Ninja/Visual Studio build tool. Direct compilation and execution results are reported in Section 12.
 
-Up to lambda ≈ 0.03 almost nothing changes: ‖w‖ stays near 0.61 and 51 samples are support vectors. From lambda = 0.1 the weights shrink steadily and the margin width (2/‖w‖) grows from 3.29 to 15.64 at lambda = 10. At that point all 80 training samples are support vectors, and test accuracy has fallen from 0.95 to 0.85. Strong regularization therefore produces underfitting.
+## 5. Hyperplane geometry and margin (Martha)
 
-**Limitations.** The test set has only 20 samples, so one sample changes accuracy by 5 percentage points. The sweep uses one split and one optimizer setting, so the trend is clear but small differences in accuracy are not conclusive.
+For a hyperplane with weights `w` and bias `b`, the score is `w . x + b`. The boundary has score zero. The signed distance from a point to the boundary is `(w . x + b) / ||w||`; the functional margin is `y * score(x)` and the geometric margin is `y * score(x) / ||w||`. The two margin boundaries have scores +1 and -1, so their distance is `2 / ||w||`.
 
-### 7.1 Core Types and Error Handling (M6)
+For the example `w = (3, 4)`, `b = -1`, and `x = (1, 1)`, the score is 6 and `||w|| = 5`. The point's signed distance is 1.2, and for label +1 its geometric margin is also 1.2. The margin width is 0.4. When `w` is zero, the score and functional margin remain defined, but distance-based operations reject division by zero with `InvalidArgument`.
 
-This layer gives every module the same data types, the same vector operations and the same way of reporting errors.
+The margin example prints scores and margins for hand-selected two-dimensional points. The report figure is [margin_geometry.svg](figures/margin_geometry.svg).
 
-**Types.** `types.hpp` defines `Vector` as `std::vector<double>` and `Matrix` as a vector of vectors stored row by row, so `X[i][j]` is feature j of sample i. Labels are kept separately in a `std::vector<int>` holding -1 or +1. A plain standard-library type keeps the code easy to read, but rows are not stored contiguously in memory, which is slower than a flat array.
+## 6. Hinge loss (Roland)
 
-**Errors.** `errors.hpp` defines `SvmError`, derived from `std::runtime_error`, and four classes derived from it: `InvalidArgument`, `DimensionMismatch`, `FileError` and `NotFitted`. Each reuses its base class constructors. Exceptions were chosen over return codes so that a bad input cannot be ignored by accident. A caller can catch one specific class or catch `SvmError` to handle any library error. `InvalidArgument` and `DimensionMismatch` are used in most source files, `FileError` in the dataset loader and `NotFitted` in `LinearSVM`.
+For `n` labelled samples, mean hinge loss is
 
-**Linear algebra.** `linalg.hpp` provides `dot`, `norm`, `add`, `sub` and `scale`, which each take O(n) time. `norm` is the square root of `dot(v, v)`. Every function that combines two vectors first calls `check_same_size`, so a size mismatch throws `DimensionMismatch` instead of reading out of bounds. The message names the failing function and both sizes, for example "dot: size mismatch (2 vs 1)". `check_X_y` validates a feature matrix and its labels: the matrix must not be empty, X and y must have the same length, and every row must have the same number of features.
+```text
+L(w, b) = (1 / n) * sum(max(0, 1 - y_i * (w . x_i + b)))
+```
 
-**Tests.** `test_linalg.cpp` runs 35 checks, all passing. They cover normal values, empty vectors, mismatched sizes, a ragged last row, error messages and the exception hierarchy.
+Samples with margin at least one contribute zero loss. Samples below the margin contribute their margin shortfall. For an active sample (`y_i * score(x_i) < 1`), its contribution to the weight subgradient is `-y_i * x_i / n` and to the bias subgradient is `-y_i / n`. At the hinge kink, the implementation selects the valid zero subgradient. Tests cover hand-computed values, invalid dimensions and labels, and a numerical gradient check.
 
-**Challenges.** `types.hpp` and `errors.hpp` were on the critical path, since every other module depends on them, so they were merged first and kept small. The shared `expect_throw` test helper reports a pass even when no exception is thrown, so these tests use their own check that verifies the exception type. The shape-check helpers are currently called only from the linalg and regularization code, because other modules validate their own input.
+## 7. Regularization and core types (Travor)
 
+The objective is
 
-## 8. Optimization (M7)
+```text
+J(w, b) = L(w, b) + (lambda / 2) * ||w||^2
+```
 
-### 8.1 Design and Implementation
+The corresponding weight gradient adds `lambda * w`; the bias is not regularized. The library's `Vector` and `Matrix` aliases and linear-algebra helpers are shared by the modules. A common exception hierarchy distinguishes invalid arguments, dimension mismatches, file errors, and model use before fitting.
 
-The M7 optimizer trains a linear Support Vector Machine using gradient-based updates. The `OptimizerConfig` structure defines the learning rate, maximum epochs, batch size, stopping tolerance, learning-rate decay option, and random seed. The `TrainingHistory` structure records the loss after each epoch, the number of epochs completed, and whether the stopping criterion was reached.
+The lambda sweep was run on the synthetic dataset with a fixed split and optimizer seed. All 11 settings in `data/output/lambda_sweep.csv` produced 1.0 training and test accuracy on this separable dataset. At lambda `0.0001`, the margin width was `2.6202` with 76 identified support vectors; at lambda `10`, it was `14.7797` with 160 support vectors. The objective increased from `0.0788` to `0.9084`. These observations describe this run only: changing lambda changes the weight scale and support-vector count, while the easy dataset remains perfectly classified.
 
-The optimizer supports batch, stochastic, and mini-batch updates through its batch-size setting. It combines the hinge-loss subgradient with the L2 regularization gradient to update the model weights and bias. Seeded random shuffling supports reproducibility. Optional learning-rate decay reduces the learning rate across epochs, while early stopping checks whether the change in loss is within the configured tolerance.
+## 8. Gradient-based optimization (Mercellinous)
 
-### 8.2 Testing and Results
+`OptimizerConfig` holds the learning rate, maximum epoch count, batch size, stopping tolerance, optional learning-rate decay, and random seed. The optimizer supports full-batch, stochastic, and mini-batch updates. Each update combines the hinge-loss subgradient with the L2 weight gradient. Seeded shuffling makes repeated runs reproducible. `TrainingHistory` stores the loss per epoch, epoch count, and convergence status.
 
-The optimizer tests cover the update modes, reproducibility, and early-stopping behavior. The registered test suite passed both `scaler_test` and `optimizer_test`.
+The existing loss-curve example report records a 50-epoch toy run in which loss decreased from `0.550675` to `0.097213`, approximately 82.3%. The run reached its epoch limit rather than reporting convergence. The small toy run illustrates optimizer behavior but does not establish generalization. The related figure is [M7_optimizer_loss_curve.html](figures/M7_optimizer_loss_curve.html); it is an approximate illustration of the trend, while the reported endpoint values came from program output.
 
-The loss-curve example was run on a small, separable toy dataset for 50 epochs. Loss decreased from 0.550675 at epoch 1 to 0.097213 at epoch 50, a reduction of approximately 82.3%. The run did not report convergence because it reached the maximum epoch limit. These results demonstrate decreasing training loss on this example, not proven performance on real-world data.
+## 9. Support vectors (Majorine)
 
-#### Hyperparameter Configuration
+The support-vector helper returns training-row indices whose signed functional margin is at most `1 + tolerance`. It checks label values, dimensions, empty inputs, and tolerance validity. `LinearSVM::support_vector_indices()` evaluates the model against the training data retained during fitting. The support-vector example reports the selected rows, margin width, and test accuracy.
 
-| Hyperparameter | Value |
-|---|---:|
-| Learning rate | 0.1 |
-| Maximum epochs | 50 |
-| Batch size | 2 |
-| Tolerance | 0.0 |
-| Learning-rate decay | Enabled |
-| Random seed | 42 |
-| L2 regularization (lambda) | 0.01 |
+## 10. Decision function and `LinearSVM` (Liz)
 
-**Figure 1.** M7 optimizer loss curve over 50 epochs on the toy dataset. The HTML figure is an approximate illustration of the decreasing trend; the initial and final loss values above come from the program output.
+The decision module calculates scores for a single feature vector or a matrix of samples. A score of zero maps to +1; a negative score maps to -1. `LinearSVM` provides a small public workflow: configure, `fit`, then call `decision_function` or `predict`. It exposes read-only access to the learned hyperplane and training history. The model checks invalid configuration and data, and methods requiring a trained model throw `NotFitted`. A failed refit leaves an existing fitted model unchanged.
 
-### 8.3 Limitations and Challenges
+## 11. Evaluation and measured results (Jesse)
 
-The results depend on the dataset and selected hyperparameters. Decreasing training loss does not guarantee good generalization, and the small toy dataset is insufficient to assess practical classification performance. A tolerance of zero makes tolerance-based early stopping unlikely while loss continues to decrease. Further evaluation should use a real dataset, compare hyperparameter settings, and assess classification metrics on held-out data.
+The metrics module calculates a binary confusion matrix, accuracy, precision, recall, F1, and a formatted classification report. The full-pipeline example uses seed 42 and lambda 0.01. It also runs five-fold accuracy with a scaler fitted independently inside each training fold.
 
-During integration, the CMake source list and a namespace mismatch in the scaler test required correction before the complete build and test suite passed.
+| Dataset and run | Test samples | Accuracy | Precision | Recall | F1 | 5-fold accuracy |
+|---|---:|---:|---:|---:|---:|---:|
+| Synthetic, scaled | 50 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
+| Iris two-class, scaled | 26 | 0.9231 | 1.0000 | 0.8462 | 0.9167 | 0.9300 |
 
-## 9. Support Vectors (M8)
+For the Iris test split, the confusion counts were TP=11, FN=2, FP=0, TN=13 (positive label is +1). The same training/test split without feature scaling gave accuracy `0.5385`, compared with `0.9231` after scaling. This is one seeded split and should not be interpreted as a general performance guarantee. The pipeline writes per-row truth, prediction, and score to `data/output/predictions.csv`; the lambda experiment is recorded in `data/output/lambda_sweep.csv`.
 
-## 10. Decision Function and the LinearSVM Class (M9)
+A scikit-learn comparison was planned in the objectives, but it is not reported as completed: scikit-learn was not installed in the available Python environment, and network access was unavailable for adding it. The C++ results above are measurements from the project implementation only.
 
-## 11. Evaluation and Results (M10)
+## 12. Integration, verification, lessons, and limitations
 
-<!-- Include results tables and the scikit-learn comparison. -->
+The integrated sources were syntax-checked and compiled with Clang 23 targeting the available 32-bit MinGW environment. The 12 library source files were linked into a static library, then all 13 test executables and all eight example executables were linked. All 13 test programs and all eight examples ran successfully. The full pipeline was also run against both bundled datasets, and the predictions and lambda-sweep CSVs were generated.
 
-## 12. Challenges, Lessons Learned and Limitations (all)
+The host could not perform the documented CMake/CTest workflow: CMake selected NMake, which was not installed; the available MinGW make/compiler programs failed to start with an operating-system DLL relocation error; and no Ninja or Visual Studio C++ build installation was present. Therefore, these results verify compilation, linking, tests, and examples through direct Clang commands, but do not verify CMake generation or CTest registration on this machine. A final clean CMake/CTest run should be made on a standard C++17/CMake environment before submission if that check is required by the instructor.
 
-### 12.1 AI-Use Summary (M8)
+The project is binary-only and linear; it does not implement kernels or multiclass classification. It expects numeric features and does not parse quoted fields containing the CSV delimiter. Missing feature values must be imputed before scaling and training. Results depend on data, split, and hyperparameters. The synthetic dataset is easy and the Iris dataset is small, so broader validation would be needed for performance claims.
 
-## Appendix: Demo Script (M10)
+The work showed the value of shared interfaces and module tests: a scaler base class enabled runtime substitution, while dataset validation and clear errors made incorrect inputs easier to identify. Seeded randomness made examples repeatable. Results should be interpreted with their dataset and split stated, and build claims should distinguish direct compiler verification from CMake/CTest verification.
+
+### 12.1 AI-use summary
+
+Historical individual reports record use of Claude (Anthropic) and ChatGPT (OpenAI) for code drafts, test ideas, debugging, CMake assistance, and documentation. This final integration pass also used ChatGPT to inspect the repository, debug and refactor code, run the available compilation and runtime checks, and prepare documentation and diagrams. The project-wide declaration is in [ai-use-declaration.md](ai-use-declaration.md). Several historical entries do not identify the AI tool or purpose; those entries are marked unrecorded there instead of inferred.
+
+## Appendix: demonstration sequence
+
+From the project root, after configuring and building with a working C++17/CMake toolchain:
+
+1. Run `example1_load_csv` to inspect a dataset.
+2. Run `example2_scaling` and `example3_margin` to demonstrate scaling and margin geometry.
+3. Run `example4_train_predict` to train and predict on held-out rows.
+4. Run `example5_full_pipeline` to view metrics and generate `data/output/predictions.csv`.
+5. Run `example6_loss_curve`, `example7_support_vectors`, and `lambda_sweep` to show training progress, support-vector identification, and the effect of lambda.
+6. Run `ctest --test-dir build --output-on-failure` on a supported CMake generator.
