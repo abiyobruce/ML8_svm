@@ -1,6 +1,7 @@
 #include <ML8_svm/dataset.hpp>
 
 #include <cmath>
+#include <cstddef>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -9,9 +10,7 @@
 
 namespace ml8_svm {
 
-// ---------------------------------------------------------------------------
 // Small helper functions. "static" means: only used inside this file.
-// ---------------------------------------------------------------------------
 
 // True for the characters we ignore at the start and end of a field.
 static bool is_blank_char(char c) {
@@ -20,11 +19,11 @@ static bool is_blank_char(char c) {
 
 // Remove blank characters from both ends of a text: "  12 " becomes "12".
 static std::string trim_text(const std::string& text) {
-    size_t start = 0;
+    std::size_t start = 0;
     while (start < text.size() && is_blank_char(text[start])) {
         start++;
     }
-    size_t end = text.size();
+    std::size_t end = text.size();
     while (end > start && is_blank_char(text[end - 1])) {
         end--;
     }
@@ -45,7 +44,7 @@ static std::string remove_quotes(const std::string& text) {
 static std::vector<std::string> split_line(const std::string& line, char delim) {
     std::vector<std::string> fields;
     std::string current = "";
-    for (size_t i = 0; i < line.size(); i++) {
+    for (std::size_t i = 0; i < line.size(); i++) {
         if (line[i] == delim) {
             fields.push_back(remove_quotes(trim_text(current)));
             current = "";
@@ -65,7 +64,7 @@ static bool is_missing(const std::string& text) {
 // If the whole text is a number, store it in "value" and return true.
 static bool is_number(const std::string& text, double& value) {
     try {
-        size_t used = 0;
+        std::size_t used = 0;
         value = std::stod(text, &used);
         return used == text.size();  // "2x" is not a number: only 1 of 2 characters was used
     } catch (...) {
@@ -76,7 +75,7 @@ static bool is_number(const std::string& text, double& value) {
 // If the whole text is an integer, store it in "value" and return true.
 static bool is_integer(const std::string& text, int& value) {
     try {
-        size_t used = 0;
+        std::size_t used = 0;
         value = std::stoi(text, &used);
         return used == text.size();  // "1.5" is not an integer
     } catch (...) {
@@ -103,9 +102,7 @@ static std::string place(const std::string& path, int line_number) {
     return "load_csv: " + path + ", line " + std::to_string(line_number) + ": ";
 }
 
-// ---------------------------------------------------------------------------
 // load_csv
-// ---------------------------------------------------------------------------
 
 Dataset load_csv(const std::string& path, bool has_header, int label_col, char delim) {
     std::ifstream file(path);

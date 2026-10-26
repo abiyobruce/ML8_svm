@@ -1,9 +1,9 @@
 // Tests for load_csv (ML8_svm/dataset.hpp).
-//
 // Run the program: it prints "FAILED: ..." for every check that fails and a summary at the end.
 // The exit code is 0 when everything passed, so CTest can use it.
 
 #include <cmath>
+#include <cstddef>
 #include <cstdio>
 #include <exception>
 #include <fstream>
@@ -58,7 +58,7 @@ bool load_fails_with_invalid(const std::string& path, bool has_header = true, in
     return false;  // no error at all
 }
 
-// ------------------------------------------------------------ the two bundled datasets
+//  the two bundled datasets
 
 void test_linear_separable() {
     Dataset d = load_csv(std::string(ML8_DATA_DIR) + "/input/linear_separable.csv");
@@ -72,7 +72,7 @@ void test_linear_separable() {
 
     int positive = 0;
     int negative = 0;
-    for (size_t i = 0; i < d.y.size(); i++) {
+    for (std::size_t i = 0; i < d.y.size(); i++) {
         if (d.y[i] == 1) positive++;
         if (d.y[i] == -1) negative++;
     }
@@ -94,14 +94,14 @@ void test_iris() {
 
     int zeros = 0;
     int ones = 0;
-    for (size_t i = 0; i < d.y.size(); i++) {
+    for (std::size_t i = 0; i < d.y.size(); i++) {
         if (d.y[i] == 0) zeros++;
         if (d.y[i] == 1) ones++;
     }
     check(zeros == 50 && ones == 50, "iris has 50 samples of each class");
 }
 
-// ------------------------------------------------------------ loader options
+//  loader options
 
 void test_no_header() {
     write_file(TEMP_FILE, "1,2,0\n3,4,1\n");
@@ -141,7 +141,7 @@ void test_signed_labels() {
     std::remove(TEMP_FILE.c_str());
 }
 
-// ------------------------------------------------------------ error cases
+//  error cases
 
 void test_missing_file() {
     bool got_file_error = false;
@@ -256,7 +256,7 @@ void test_excel_byte_order_mark() {
     std::remove(TEMP_FILE.c_str());
 }
 
-// ------------------------------------------------------------ number formats and file layouts
+//  number formats and file layouts
 
 void test_number_formats() {
     write_file(TEMP_FILE, "a,b,label\n-2.5,1e-3,0\n+3,.5,1\n");
@@ -294,7 +294,7 @@ void test_names_with_spaces() {
     std::remove(TEMP_FILE.c_str());
 }
 
-// ------------------------------------------------------------ quoted fields
+//  quoted fields
 
 void test_quoted_fields() {
     write_file(TEMP_FILE, "\"x1\",\"x2\",\"label\"\n\"1.5\",\"2.5\",\"0\"\n\"3.5\",4.5,1\n");
@@ -323,7 +323,7 @@ void test_quote_that_is_not_closed() {
     std::remove(TEMP_FILE.c_str());
 }
 
-// ------------------------------------------------------------ labels written like 1.0
+//  labels written like 1.0
 
 void test_labels_written_with_decimals() {
     write_file(TEMP_FILE, "a,label\n1.5,1.0\n2.5,-1.0\n3.5,0\n");

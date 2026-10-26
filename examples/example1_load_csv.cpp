@@ -1,11 +1,10 @@
 // Example 1: load a CSV file and print a summary of the data.
-//
 // Usage:    example1_load_csv [path-to-csv-file]
 // Example:  example1_load_csv data/input/linear_separable.csv
-//
 // If you give no file name, data/input/linear_separable.csv is used.
 
 #include <cmath>
+#include <cstddef>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -43,9 +42,9 @@ int main(int argc, char* argv[]) {
     // Step 3: how many samples have each label.
     std::vector<int> labels;  // the different labels we have seen
     std::vector<int> counts;  // counts[k] = number of samples with label labels[k]
-    for (size_t i = 0; i < data.y.size(); i++) {
+    for (std::size_t i = 0; i < data.y.size(); i++) {
         bool found = false;
-        for (size_t k = 0; k < labels.size(); k++) {
+        for (std::size_t k = 0; k < labels.size(); k++) {
             if (labels[k] == data.y[i]) {
                 counts[k]++;
                 found = true;
@@ -57,7 +56,7 @@ int main(int argc, char* argv[]) {
         }
     }
     std::cout << "\nLabels:\n";
-    for (size_t k = 0; k < labels.size(); k++) {
+    for (std::size_t k = 0; k < labels.size(); k++) {
         std::cout << "  label " << labels[k] << ": " << counts[k] << " samples\n";
     }
 
@@ -66,14 +65,14 @@ int main(int argc, char* argv[]) {
     std::cout << std::fixed << std::setprecision(3);
     std::cout << "\nFeatures:\n";
     int total_missing = 0;
-    for (size_t j = 0; j < data.n_features(); j++) {
+    for (std::size_t j = 0; j < data.n_features(); j++) {
         int missing = 0;
         int present = 0;
         double sum = 0.0;
         double smallest = 0.0;
         double largest = 0.0;
 
-        for (size_t i = 0; i < data.n_samples(); i++) {
+        for (std::size_t i = 0; i < data.n_samples(); i++) {
             double value = data.X[i][j];
             if (std::isnan(value)) {
                 missing++;
@@ -101,17 +100,17 @@ int main(int argc, char* argv[]) {
 
     // Step 5: the first rows of the data.
     std::cout << "\nFirst rows:\n";
-    for (size_t j = 0; j < data.n_features(); j++) {
+    for (std::size_t j = 0; j < data.n_features(); j++) {
         std::cout << std::setw(14) << data.feature_names[j];
     }
     std::cout << std::setw(8) << "label" << "\n";
 
-    size_t rows_to_show = 5;
+    std::size_t rows_to_show = 5;
     if (data.n_samples() < rows_to_show) {
         rows_to_show = data.n_samples();
     }
-    for (size_t i = 0; i < rows_to_show; i++) {
-        for (size_t j = 0; j < data.n_features(); j++) {
+    for (std::size_t i = 0; i < rows_to_show; i++) {
+        for (std::size_t j = 0; j < data.n_features(); j++) {
             if (std::isnan(data.X[i][j])) {
                 std::cout << std::setw(14) << "missing";
             } else {
