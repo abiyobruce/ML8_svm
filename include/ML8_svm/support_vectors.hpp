@@ -22,7 +22,7 @@ namespace ml8_svm {
  * @param tol  Non-negative tolerance added to the margin boundary.
  * @return     Indices (into X) of the support vectors, in increasing order.
  *
- * @throws InvalidArgument      if X is empty, a label is not -1/+1, or tol < 0.
+ * @throws InvalidArgument      if X is empty, a label is not -1/+1, or tol is invalid.
  * @throws DimensionMismatch    if X.size() != y.size() or a row length != h.w.size().
  */
 std::vector<std::size_t> find_support_vectors(const Hyperplane& h,

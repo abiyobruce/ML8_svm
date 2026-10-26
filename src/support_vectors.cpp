@@ -1,6 +1,6 @@
 #include <ML8_svm/support_vectors.hpp>
-
 #include <ML8_svm/errors.hpp>
+#include <cmath>
 
 namespace ml8_svm {
 
@@ -11,8 +11,8 @@ std::vector<std::size_t> find_support_vectors(const Hyperplane& h,
     if (X.empty()) {
         throw InvalidArgument("find_support_vectors: X is empty");
     }
-    if (tol < 0.0) {
-        throw InvalidArgument("find_support_vectors: tol must be >= 0");
+    if (!std::isfinite(tol) || tol < 0.0) {
+        throw InvalidArgument("find_support_vectors: tol must be finite and >= 0");
     }
     if (X.size() != y.size()) {
         throw DimensionMismatch("find_support_vectors: X and y have different lengths");

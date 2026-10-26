@@ -1,11 +1,12 @@
 // example7_support_vectors.cpp
 // Trains a linear SVM on a two-class CSV file and lists its support vectors.
-//
 // Usage: example7_support_vectors [path/to/data.csv]
 // Default path: data/input/linear_separable.csv (label in the last column, with header).
 
 #include <iostream>
+#include <cstddef>
 #include <string>
+#include <vector>
 
 #include <ML8_svm/ML8_svm.hpp>
 
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
 
         // 4. Support-vector analysis on the training set.
         const Hyperplane& h = svm.hyperplane();
-        const std::vector<size_t> sv = find_support_vectors(h, X_train, split.train.y);
+        const std::vector<std::size_t> sv = find_support_vectors(h, X_train, split.train.y);
 
         std::cout << "Dataset: " << path << "\n";
         std::cout << "Training samples: " << X_train.size() << "\n";
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
                   << (100.0 * sv.size() / X_train.size()) << "%)\n\n";
 
         std::cout << "index  label  y*score  features (scaled)\n";
-        for (size_t i : sv) {
+        for (std::size_t i : sv) {
             std::cout << i << "      " << split.train.y[i] << "     "
                       << split.train.y[i] * h.score(X_train[i]) << "   ";
             for (double v : X_train[i]) std::cout << v << " ";
