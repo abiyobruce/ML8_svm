@@ -25,6 +25,8 @@ install_manifest.txt
 # Temporary files
 *.tmp
 *.log
+data/output/pipeline_test_*.csv
+data/output/pipeline_repro_*.csv
 
 # Operating system files
 .DS_Store
