@@ -5,6 +5,7 @@ project(ML8_svm VERSION 1.0.0 LANGUAGES CXX)
 # use C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+<<<<<<< HEAD
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # if no build type is given, use Release
@@ -16,6 +17,8 @@ endif()
 option(ML8_SVM_BUILD_TESTS "Build tests" ON)
 
 # our library (all the files in src)
+=======
+>>>>>>> origin/main
 add_library(ML8_svm
     src/dataset.cpp
     src/Decision.cpp
@@ -26,6 +29,17 @@ add_library(ML8_svm
     src/optimizer.cpp
     src/regularization.cpp
     src/scaler.cpp
+    src/linalg.cpp
+    src/hyperplane.cpp
+    src/hinge_loss.cpp
+    src/regularization.cpp
+    src/optimizer.cpp
+    src/dataset.cpp
+    src/decision.cpp
+    src/linear_svm.cpp
+    src/metrics.cpp
+    src/preprocessing.cpp
+    src/support_vectors.cpp
 )
 
 add_library(ML8_svm::ML8_svm ALIAS ML8_svm)
@@ -44,6 +58,7 @@ else()
     target_compile_options(ML8_svm PRIVATE -Wall -Wextra)
 endif()
 
+<<<<<<< HEAD
 # install part
 include(GNUInstallDirs)
 
@@ -69,3 +84,13 @@ if(ML8_SVM_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+=======
+add_subdirectory(tests)
+add_executable(example6_loss_curve
+    examples/example6_loss_curve.cpp
+)
+
+target_link_libraries(example6_loss_curve
+    PRIVATE ML8_svm::ML8_svm
+)
+>>>>>>> origin/main
