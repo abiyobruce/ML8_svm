@@ -1,101 +1,71 @@
 // Unit tests for linalg.hpp: normal cases, empty vectors and mismatched sizes.
-#include <cmath>
 #include <string>
 
 #include <ML8_svm/linalg.hpp>
 
-#include "tests_utils.hpp"
+#include "test_utils.hpp"
 
 using namespace std;
 using namespace ml8_svm;
 
-namespace {
-
-// True if a and b differ by at most tol.
-bool approx(double a, double b, double tol = 1e-12) { return fabs(a - b) <= tol; }
-
-// Passes only if fn() throws Exception (or a class derived from it).
-// The expect_throw helper in tests_utils.hpp also passes when nothing is
-// thrown and ignores the exception type, so it is not used here.
-template <typename Exception, typename Function>
-void expect_throws(Function fn, const string& message) {
-    bool thrown = false;
-    try {
-        fn();
-    } catch (const Exception&) {
-        thrown = true;
-    } catch (...) {
-    }
-    test_assert(thrown, message);
-}
-
-}  // namespace
-
 int main() {
-    // ---- dot ----
-    test_assert(approx(dot({1, 2, 3}, {4, 5, 6}), 32.0), "dot: (1,2,3).(4,5,6) = 32");
-    test_assert(approx(dot({1, -2}, {-3, 4}), -11.0), "dot: negative entries");
-    test_assert(approx(dot({}, {}), 0.0), "dot: two empty vectors give 0");
-    expect_throws<DimensionMismatch>([] { dot({1, 2}, {1}); }, "dot: different sizes throw DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { dot({}, {1}); }, "dot: empty and non-empty throw DimensionMismatch");
+    //  dot 
+    ASSERT_NEAR(dot({1, 2, 3}, {4, 5, 6}), 32.0, 1e-12);
+    ASSERT_NEAR(dot({1, -2}, {-3, 4}), -11.0, 1e-12);  // negative entries
+    ASSERT_NEAR(dot({}, {}), 0.0, 1e-12);              // two empty vectors
+    EXPECT_THROWS(dot({1, 2}, {1}), DimensionMismatch);
+    EXPECT_THROWS(dot({}, {1}), DimensionMismatch);    // one empty vector
 
-    // ---- norm ----
-    test_assert(approx(norm({3, 4}), 5.0), "norm: (3,4) = 5");
-    test_assert(approx(norm({-3, -4}), 5.0), "norm: sign does not matter");
-    test_assert(approx(norm({5}), 5.0), "norm: single element");
-    test_assert(approx(norm({0, 0, 0}), 0.0), "norm: zero vector");
-    test_assert(approx(norm({}), 0.0), "norm: empty vector");
+    //  norm 
+    ASSERT_NEAR(norm({3, 4}), 5.0, 1e-12);
+    ASSERT_NEAR(norm({-3, -4}), 5.0, 1e-12);           // sign does not matter
+    ASSERT_NEAR(norm({5}), 5.0, 1e-12);
+    ASSERT_NEAR(norm({0, 0, 0}), 0.0, 1e-12);
+    ASSERT_NEAR(norm({}), 0.0, 1e-12);
 
-    // ---- add and sub ----
-    test_assert(add({1, 2}, {3, 4}) == Vector({4, 6}), "add: element-wise sum");
-    test_assert(add({}, {}).empty(), "add: two empty vectors give an empty vector");
-    test_assert(sub({5, 7}, {2, 3}) == Vector({3, 4}), "sub: element-wise difference");
-    test_assert(sub({2, 3}, {2, 3}) == Vector({0, 0}), "sub: equal vectors give zeros");
-    test_assert(sub({}, {}).empty(), "sub: two empty vectors give an empty vector");
-    expect_throws<DimensionMismatch>([] { add({1}, {1, 2}); }, "add: different sizes throw DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { add({}, {1}); }, "add: empty and non-empty throw DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { sub({1, 2}, {1}); }, "sub: different sizes throw DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { sub({1}, {}); }, "sub: non-empty and empty throw DimensionMismatch");
+    //  add and sub 
+    ASSERT_TRUE(add({1, 2}, {3, 4}) == Vector({4, 6}));
+    ASSERT_TRUE(add({}, {}).empty());
+    ASSERT_TRUE(sub({5, 7}, {2, 3}) == Vector({3, 4}));
+    ASSERT_TRUE(sub({2, 3}, {2, 3}) == Vector({0, 0}));
+    ASSERT_TRUE(sub({}, {}).empty());
+    EXPECT_THROWS(add({1}, {1, 2}), DimensionMismatch);
+    EXPECT_THROWS(add({}, {1}), DimensionMismatch);
+    EXPECT_THROWS(sub({1, 2}, {1}), DimensionMismatch);
+    EXPECT_THROWS(sub({1}, {}), DimensionMismatch);
 
-    // ---- scale ----
-    test_assert(scale({1, -2, 3}, 2.0) == Vector({2, -4, 6}), "scale: multiply by 2");
-    test_assert(scale({1, -2}, -1.0) == Vector({-1, 2}), "scale: multiply by -1");
-    test_assert(scale({1, 2}, 0.0) == Vector({0, 0}), "scale: multiply by 0");
-    test_assert(scale({}, 5.0).empty(), "scale: empty vector stays empty");
+    //  scale 
+    ASSERT_TRUE(scale({1, -2, 3}, 2.0) == Vector({2, -4, 6}));
+    ASSERT_TRUE(scale({1, -2}, -1.0) == Vector({-1, 2}));
+    ASSERT_TRUE(scale({1, 2}, 0.0) == Vector({0, 0}));
+    ASSERT_TRUE(scale({}, 5.0).empty());
 
-    // ---- check_same_size ----
+    //  check_same_size 
     check_same_size({1, 2}, {3, 4}, "test");
     check_same_size({}, {}, "test");
-    test_assert(true, "check_same_size: equal sizes do not throw");
-    expect_throws<DimensionMismatch>([] { check_same_size({1, 2}, {3}, "test"); },
-                                     "check_same_size: different sizes throw DimensionMismatch");
+    EXPECT_THROWS(check_same_size({1, 2}, {3}, "test"), DimensionMismatch);
 
-    // ---- check_X_y ----
+    //  check_X_y 
     check_X_y({{1, 2}, {3, 4}}, {1, -1}, "test");
-    test_assert(true, "check_X_y: consistent X and y do not throw");
-    expect_throws<InvalidArgument>([] { check_X_y({}, {}, "test"); }, "check_X_y: no samples throws InvalidArgument");
-    expect_throws<InvalidArgument>([] { check_X_y({}, {1}, "test"); }, "check_X_y: empty X with labels throws InvalidArgument");
-    expect_throws<DimensionMismatch>([] { check_X_y({{1, 2}}, {}, "test"); }, "check_X_y: empty y throws DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { check_X_y({{1, 2}, {3, 4}}, {1}, "test"); },
-                                     "check_X_y: fewer labels than rows throws DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { check_X_y({{1, 2}, {3}}, {1, -1}, "test"); },
-                                     "check_X_y: ragged second row throws DimensionMismatch");
-    expect_throws<DimensionMismatch>([] { check_X_y({{1, 2}, {3, 4}, {5}}, {1, -1, 1}, "test"); },
-                                     "check_X_y: ragged last row throws DimensionMismatch");
+    EXPECT_THROWS(check_X_y({}, {}, "test"), InvalidArgument);          // no samples
+    EXPECT_THROWS(check_X_y({}, {1}, "test"), InvalidArgument);         // X empty, y not
+    EXPECT_THROWS(check_X_y({{1, 2}}, {}, "test"), DimensionMismatch);  // y empty, X not
+    EXPECT_THROWS(check_X_y({{1, 2}, {3, 4}}, {1}, "test"), DimensionMismatch);
+    EXPECT_THROWS(check_X_y({{1, 2}, {3}}, {1, -1}, "test"), DimensionMismatch);
+    EXPECT_THROWS(check_X_y({{1, 2}, {3, 4}, {5}}, {1, -1, 1}, "test"),
+                  DimensionMismatch);  // only the last row is ragged
 
-    // ---- every error can be caught as the base class SvmError ----
-    expect_throws<SvmError>([] { dot({1}, {1, 2}); }, "DimensionMismatch is an SvmError");
-    expect_throws<SvmError>([] { check_X_y({}, {}, "test"); }, "InvalidArgument is an SvmError");
+    //  every error can be caught as the base class SvmError 
+    EXPECT_THROWS(dot({1}, {1, 2}), SvmError);
+    EXPECT_THROWS(check_X_y({}, {}, "test"), SvmError);
 
-    // ---- the error message names the function that failed ----
-    string message;
+    //  the error message names the function that failed 
     try {
         dot({1, 2}, {1});
-    } catch (const SvmError& e) {
-        message = e.what();
+        ASSERT_TRUE(false);  // dot must throw before this line
+    } catch (const DimensionMismatch& e) {
+        ASSERT_TRUE(string(e.what()).find("dot") != string::npos);
     }
-    test_assert(message.find("dot") != string::npos, "dot: error message contains the function name");
 
-    cout << "All linalg tests passed." << endl;
     return 0;
 }

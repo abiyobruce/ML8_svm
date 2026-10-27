@@ -1,23 +1,29 @@
-// types.hpp: the two basic types used throughout the library.
+// types.hpp  --  Core type aliases for the ML8_svm library
 // Owner: Travor (M6)
 //
-// Header-only: it contains only type aliases, so there is no .cpp file.
-#pragma once
+// WHY THIS FILE EXISTS
+//   Every module (dataset, scaler, hyperplane, optimizer, ...) passes numbers
+//   around as vectors and matrices. If each member invented their own type, the
+//   modules would not fit together. So we define the two shared types ONCE here.
+//
+// This file is header-only (no .cpp), because it only contains type aliases.
+#pragma once   // Make sure the compiler reads this file only once per build.
 
 #include <vector>
 
 namespace ml8_svm {
 
-// A list of real numbers: one sample's features, a weight vector, a gradient.
-// Example: the point (1.5, -2.0) is Vector{1.5, -2.0}.
+// A Vector is a list of real numbers.
+// Used for: one sample's features (x), the weight vector (w), gradients, etc.
+// Example: the point (1.5, -2.0) is  Vector{1.5, -2.0}
 using Vector = std::vector<double>;
 
-// A table of numbers stored row by row.
-//   X[i]    is sample i
+// A Matrix is a list of Vectors, stored ROW-MAJOR:
+//   X[i]    is the i-th row = the features of sample i
 //   X[i][j] is feature j of sample i
-// X.size() is the number of samples and X[0].size() is the number of features.
-// Labels are not stored in a Matrix. They are kept in a separate
-// std::vector<int> that holds -1 or +1 for each sample.
+// So X.size() is the number of samples (n) and X[0].size() is the number of
+// features (d). Labels (y) are NOT stored in the Matrix; they live in a
+// separate std::vector<int> holding -1 or +1 for each sample.
 using Matrix = std::vector<Vector>;
 
 }  // namespace ml8_svm

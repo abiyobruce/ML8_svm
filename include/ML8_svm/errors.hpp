@@ -1,27 +1,31 @@
-// errors.hpp: the exceptions thrown by the library.
+// errors.hpp  --  Exception hierarchy for the ML8_svm library
 // Owner: Travor (M6)
 //
-// Public functions check their input and throw one of these exceptions
-// instead of returning a wrong result.
+// WHY THIS FILE EXISTS
+//   The project rule is: public functions validate their input and THROW an
+//   exception instead of silently returning a wrong answer. To keep error
+//   handling consistent, everybody throws the types defined here.
+//
+// HOW THEY ARE ORGANISED
 //
 //   std::runtime_error
 //        |
-//     SvmError                  base class: catch it to catch any library error
-//        |-- InvalidArgument    a value is not allowed (negative lambda, empty
-//        |                      dataset, only one class, ...)
-//        |-- DimensionMismatch  sizes do not match (dot product of a 3-vector
-//        |                      and a 4-vector, X and y of different length, ...)
-//        |-- FileError          a file cannot be opened or read
-//        `-- NotFitted          a model or scaler is used before fit()
+//     SvmError                  <- catch this to catch ANY library error
+//        |-- InvalidArgument    <- a value is not allowed (e.g. lambda < 0,
+//        |                         empty dataset, only one class)
+//        |-- DimensionMismatch  <- sizes do not fit together (e.g. dot product
+//        |                         of a 3-vector and a 4-vector)
+//        |-- FileError          <- a file cannot be opened or read
+//        `-- NotFitted          <- model/scaler used before fit() was called
 //
-// Usage:
+// HOW TO USE (examples for teammates)
 //   throw ml8_svm::InvalidArgument("lambda must be >= 0");
 //
-//   try { model.predict(x); }
-//   catch (const ml8_svm::NotFitted& e) { /* fit() was not called */ }
+//   try { svm.predict(x); }
+//   catch (const ml8_svm::NotFitted& e) { std::cerr << e.what(); }
 //   catch (const ml8_svm::SvmError& e)  { /* any other library error */ }
 //
-// Header-only: each class only inherits the constructors of its base class.
+// Header-only: each class only needs to inherit the constructor.
 #pragma once
 
 #include <stdexcept>
@@ -29,9 +33,9 @@
 
 namespace ml8_svm {
 
-// Base class of every exception thrown by this library.
-// The using-declaration reuses the constructors of std::runtime_error, so
-// SvmError("message") works directly.
+// Base class of all errors thrown by this library.
+// "using std::runtime_error::runtime_error;" means: reuse the parent's
+// constructors, so we can write  SvmError("message")  directly.
 struct SvmError : std::runtime_error {
     using std::runtime_error::runtime_error;
 };
@@ -51,7 +55,7 @@ struct FileError : SvmError {
     using SvmError::SvmError;
 };
 
-// A model or scaler was used before fit() was called.
+// Something that must be fitted first (LinearSVM, scalers) was used too early.
 struct NotFitted : SvmError {
     using SvmError::SvmError;
 };

@@ -1,10 +1,10 @@
 // Lambda sweep: trains one linear SVM for each regularization strength (lambda)
 // and records how the model changes. Results are printed and saved as a CSV file.
-//
 // Usage (run from the repository root):
 //   lambda_sweep [input_csv] [output_csv]
 // Defaults: data/input/linear_separable.csv -> data/output/lambda_sweep.csv
 #include <cmath>
+#include <cstddef>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -25,8 +25,8 @@ using namespace ml8_svm;
 
 // Fraction of predictions that equal the true labels.
 static double accuracy_of(const vector<int>& truth, const vector<int>& predicted) {
-    size_t correct = 0;
-    for (size_t i = 0; i < truth.size(); ++i) {
+    std::size_t correct = 0;
+    for (std::size_t i = 0; i < truth.size(); ++i) {
         if (truth[i] == predicted[i]) ++correct;
     }
     return static_cast<double>(correct) / truth.size();
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
             const double obj = objective(h, X_train, split.train.y, lambda);
             const double train_acc = accuracy_of(split.train.y, svm.predict(X_train));
             const double test_acc = accuracy_of(split.test.y, svm.predict(X_test));
-            const size_t n_sv = svm.support_vector_indices().size();
+            const std::size_t n_sv = svm.support_vector_indices().size();
 
             out << lambda << ',' << weight_norm << ',' << margin << ',' << obj << ','
                 << train_acc << ',' << test_acc << ',' << n_sv << '\n';

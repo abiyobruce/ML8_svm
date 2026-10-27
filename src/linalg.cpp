@@ -1,7 +1,5 @@
-// =============================================================================
 // linalg.cpp  --  Implementation of the helpers declared in linalg.hpp
-// Owner: Trevor (M6)
-// =============================================================================
+// Owner: Travor (M6)
 #include <ML8_svm/linalg.hpp>
 
 #include <cmath>  // std::sqrt
