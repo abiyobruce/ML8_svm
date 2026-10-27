@@ -1,4 +1,4 @@
-// test_metrics.cpp - Unit tests for metrics.hpp (M10)
+// test_metrics.cpp - Unit tests for metrics.hpp
 #include <ML8_svm/metrics.hpp>
 #include <ML8_svm/errors.hpp>
 
@@ -38,13 +38,13 @@ static int g_failures = 0;
 
 using Labels = std::vector<int>;
 
-// ---- Struct ----------------------------------------------------------------
+//  Struct 
 static void test_confusion_matrix_struct() {
     ConfusionMatrix cm;
     CHECK(cm.tp == 0 && cm.fp == 0 && cm.tn == 0 && cm.fn == 0);
 }
 
-// ---- Confusion matrix -------------------------------------------------------
+//  Confusion matrix 
 // y_true = {+1,+1,+1,-1,-1,-1,-1,+1}
 // y_pred = {+1,+1,-1,-1,-1,+1,-1,+1}
 //   tp: idx 0,1,7 = 3    fn: idx 2 = 1
@@ -60,7 +60,7 @@ static void test_confusion_matrix_counts() {
     CHECK(cm.tn == 3);
 }
 
-// ---- Main metrics -----------------------------------------------------------
+//  Main metrics 
 // accuracy = 6/8 = 0.75, precision = 3/4, recall = 3/4, f1 = 0.75
 static void test_accuracy_precision_recall_f1() {
     CHECK_NEAR(accuracy(kTrue, kPred), 0.75);
@@ -111,7 +111,7 @@ static void test_all_wrong_predictions() {
     CHECK_NEAR(f1_score(t, p), 0.0);
 }
 
-// ---- Zero-division cases ----------------------------------------------------
+//  Zero-division cases 
 // Nothing predicted positive: tp + fp == 0 -> precision = 0.0
 // true = {+1,+1,-1,-1}, pred = all -1: tp=0 fp=0 tn=2 fn=2
 static void test_zero_division_precision() {
@@ -144,7 +144,7 @@ static void test_only_negatives_all_correct() {
     CHECK_NEAR(f1_score(t, t), 0.0);
 }
 
-// ---- Invalid input ----------------------------------------------------------
+//  Invalid input 
 static void test_size_mismatch_throws() {
     const Labels t = {1, -1, 1};
     const Labels p = {1, -1};
@@ -172,7 +172,7 @@ static void test_invalid_label_throws() {
     EXPECT_THROWS(InvalidArgument, accuracy(zero, two));
 }
 
-// ---- Report -----------------------------------------------------------------
+//  Report 
 static void test_classification_report_contains_metrics() {
     const std::string r = classification_report(kTrue, kPred);
     CHECK(r.find("Accuracy") != std::string::npos);

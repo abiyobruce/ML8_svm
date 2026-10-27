@@ -1,5 +1,5 @@
 #pragma once
-// metrics.hpp - Model evaluation for binary classification (M10)
+// metrics.hpp - Model evaluation for binary classification
 //
 // Labels are encoded as -1 / +1. The POSITIVE class is +1.
 // All functions live in namespace ml8_svm.

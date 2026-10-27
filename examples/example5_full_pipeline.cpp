@@ -1,11 +1,9 @@
 // example5_full_pipeline.cpp - Full pipeline with evaluation
-//
 // Usage: example5_full_pipeline [input.csv] [output_predictions.csv]
 // Defaults: data/input/linear_separable.csv  data/output/predictions.csv
 #include <ML8_svm/ML8_svm.hpp>
 
 #include <algorithm>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -15,7 +13,6 @@
 #include <vector>
 
 using namespace ml8_svm;
-namespace fs = std::filesystem;
 
 static OptimizerConfig make_config(unsigned seed) {
     OptimizerConfig cfg{};
@@ -32,10 +29,11 @@ static void save_predictions(const std::string& path,
                              const std::vector<int>& y_true,
                              const std::vector<int>& y_pred,
                              const Vector& scores) {
-    const fs::path p(path);
-    if (p.has_parent_path()) fs::create_directories(p.parent_path());
     std::ofstream out(path);
-    if (!out) throw FileError("cannot write predictions to " + path);
+    if (!out) {
+        throw FileError("cannot write predictions to " + path +
+                        "; make sure the output folder exists");
+    }
     out << "index,y_true,y_pred,score\n" << std::setprecision(8);
     for (std::size_t i = 0; i < y_true.size(); ++i)
         out << i << ',' << y_true[i] << ',' << y_pred[i] << ',' << scores[i]

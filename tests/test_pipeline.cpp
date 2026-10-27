@@ -1,7 +1,6 @@
 #include <ML8_svm/ML8_svm.hpp>
 
 #include <cstdio>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -10,7 +9,6 @@
 #include <vector>
 
 using namespace ml8_svm;
-namespace fs = std::filesystem;
 
 static int g_failures = 0;
 #define CHECK(cond)                                                    \
@@ -81,10 +79,8 @@ static PipelineResult run_pipeline(const std::string& csv, unsigned seed) {
 }
 
 static void test_full_pipeline() {
-    const std::string csv =
-        (fs::temp_directory_path() / "ml8_svm_pipeline_test.csv").string();
-    const std::string out_csv =
-        (fs::temp_directory_path() / "ml8_svm_pipeline_preds.csv").string();
+    const std::string csv = "data/output/pipeline_test_input.csv";
+    const std::string out_csv = "data/output/pipeline_test_predictions.csv";
     write_synthetic_csv(csv, 200);
 
     const PipelineResult r = run_pipeline(csv, 42);
@@ -127,8 +123,7 @@ static void test_full_pipeline() {
 
 // Same seed, same data -> identical predictions
 static void test_pipeline_is_reproducible() {
-    const std::string csv =
-        (fs::temp_directory_path() / "ml8_svm_pipeline_repro.csv").string();
+    const std::string csv = "data/output/pipeline_repro_input.csv";
     write_synthetic_csv(csv, 120);
 
     const PipelineResult a = run_pipeline(csv, 7);
