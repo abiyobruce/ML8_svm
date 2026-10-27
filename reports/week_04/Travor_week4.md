@@ -16,10 +16,6 @@
 - The shared `expect_throw` helper reports a pass even when no exception is thrown. The tests use their own check of the exception type instead.
 - The first sweep results came from a pre-merge optimizer and differed from the merged one, so the sweep was re-run after the merge.
 
-#### Next Week
-- Fix any review comments and re-run the sweep if the optimizer changes.
-- Prepare my slide on the core layer and the regularization results for the presentation.
-
 #### AI Use
 - **Tool:** Claude (Anthropic).
 - **Purpose:** Drafted the header comments, the adapted test files and the first version of the two report sections.
