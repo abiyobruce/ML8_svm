@@ -1,4 +1,4 @@
-### M10 – Jesse (Model evaluation)
+### Model evaluation
 
 **Completed**
 - Declared the evaluation API in include/ML8_svm/metrics.hpp: ConfusionMatrix
@@ -14,7 +14,7 @@
 - Reviewing M1's pull request (dataset module), as per the review pairing.
 
 **Challenges / Blockers**
-- Waiting for errors.hpp (M6) and test_utils.hpp (M3) before the error-handling
+- Waiting for errors.hpp and test_utils.hpp before the error-handling
   tests and shared test macros can be used.
 
 **Next Week**
@@ -23,8 +23,5 @@
 - Sync with M7 and M9 at the end of Week 2.
 
 **AI Use**
-- <FILL IN HONESTLY>. Example: "Claude (Anthropic) was used to draft the
-  header and stub layout from the group work plan. Purpose: save time on
-  boilerplate. All code was reviewed, compiled and understood by me before
-  committing."
-  If no AI was used: "No AI tools were used this week."
+- "Claude (Anthropic) was used to draft the header and stub layout from the group work plan. Purpose: save time on boilerplate. All code was reviewed, compiled and understood by me before
+committing."
