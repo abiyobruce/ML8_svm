@@ -66,9 +66,9 @@ Include the complete public API with:
 Run these commands from the repository root:
 
 ```sh
-cmake -S . -B build -DBUILD_TESTING=ON -DML8_SVM_BUILD_EXAMPLES=ON
-cmake --build build --config Release
-ctest --test-dir build -C Release --output-on-failure
+cmake -S . -B cmake-build-vs -G "Visual Studio 18 2026" -A x64 -DBUILD_TESTING=ON -DML8_SVM_BUILD_EXAMPLES=ON
+cmake --build cmake-build-vs --config Debug --parallel 1
+ctest --test-dir cmake-build-vs -C Debug --output-on-failure
 ```
 
 The test suite contains one executable for each major module and an end-to-end pipeline test. To build only the library, configure with `-DBUILD_TESTING=OFF -DML8_SVM_BUILD_EXAMPLES=OFF`.
