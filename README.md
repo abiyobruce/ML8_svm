@@ -76,7 +76,7 @@ The test suite contains one executable for each major module and an end-to-end p
 To install the library and CMake package files into a local directory:
 
 ```sh
-cmake --install build --prefix install
+cmake --install cmake-build-vs --config Debug --prefix install
 ```
 
 An installed project can be linked from CMake with:
