@@ -1,3 +1,4 @@
+# Machine Learning 8: Support Vector Machine for Binary Classification
 # ML8_svm
 
 ML8_svm is a reusable C++17 library for binary classification with a linear Support Vector Machine. The project implements the model and its training steps directly in C++, without a machine-learning dependency. 
