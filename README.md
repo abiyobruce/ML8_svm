@@ -185,7 +185,8 @@ The work was divided into modules with shared public interfaces. Members develop
 
 AI tools were used as supporting aids for planning, code drafts, debugging, test ideas, and documentation. Contributors remain responsible for checking and understanding the code they submit. The reports directory contains the weekly records and the final AI-use declaration.
 
-Weekly summaries are named with their reporting week and compiler, and per-member reports are stored under `reports/week_01/` through `reports/week_04/` with the member name in each filename. Where an individual report or historical AI-use detail was unavailable, the project records that gap explicitly rather than inventing a contributor statement. See `reports/README.md` for the report index and `reports/ai-use-declaration.md` for the consolidated disclosure.
+Weekly summaries are named with their reporting week and compiler, and per-member reports are stored under `reports/week_01/` through `reports/week_04/` with the member name in each filename.
+See `reports/README.md` for the report index and `reports/ai-use-declaration.md` for the consolidated disclosure.
 
 ## License
 
