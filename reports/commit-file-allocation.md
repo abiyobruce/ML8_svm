@@ -97,7 +97,6 @@ This checklist maps the project files to the ten module assignments in the proje
 - `reports/final-report.md`
 - `reports/ai-use-declaration.md`
 - Week 3 class-layout figures: `reports/week_03/class_layouts/scaler_hierarchy.jpg`, `reports/week_03/class_layouts/linear_svm_encapsulation.jpg`
-- Final presentation coordinated with the team: `presentation/ML8_svm_Final_Presentation.pptx`
 - Reports: `reports/week_01/Majorine_Week1.md`, `reports/week_02/Majorine_week2.md`, `reports/week_03/Majorine_week-03.md`, `reports/week_04/Majorine_week4.md`
 
 ## Liz (M9) — decision function and binary classification
