@@ -44,9 +44,9 @@ ML8_svm/
 |-- src/                   Library implementation
 |-- tests/                 Dependency-free unit and pipeline tests
 |-- examples/              Seven learning examples and a lambda sweep
+|-- terminal_commands/     VS code terminal commands for CMake Build and examples
 |-- data/input/            Synthetic and Iris two-class CSV files
 |-- data/output/           Generated prediction and experiment results
-|-- presentation/          Final project presentation
 `-- reports/               Weekly reports, final report, figures, AI declaration
 ```
 

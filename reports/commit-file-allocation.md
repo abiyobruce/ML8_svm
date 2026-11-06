@@ -55,7 +55,7 @@ This checklist maps the project files to the ten module assignments in the proje
 - `tests/test_hinge_loss.cpp`
 - Reports: `reports/week_01/roland_week1.md`, `reports/week_02/Roland_week2.md`, `reports/week_03/Roland_week3_status.md`, `reports/week_04/Roland_week4.md`
 
-## Travor (M6; also written Trevor) — core types, linear algebra, regularization
+## Travor (M6) — core types, linear algebra, regularization
 
 **Directories:** `include/ML8_svm/`, `src/`, `tests/`, `examples/`, `data/output/`, `reports/week_01/` through `reports/week_04/`.
 
